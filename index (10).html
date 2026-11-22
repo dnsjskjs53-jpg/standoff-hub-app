@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CF STANDOFFKNIFE — FACEIT LEAGUE</title>
+<style>
+  :root {
+    --bg: #0b0b0f;
+    --card: #14141b;
+    --card-2: #1c1c26;
+    --border: rgba(255, 255, 255, 0.08);
+    --accent: #f43f5e;
+    --accent-grad: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    --gold: #f59e0b;
+    --green: #10b981;
+    --text: #f3f4f6;
+    --muted: #9ca3af;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); padding-bottom: 84px; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 14px; }
+
+  /* Top Bar */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-grad); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #fff; }
+  .brand-title { font-weight: 800; font-size: 14px; letter-spacing: 0.4px; }
+  .brand-sub { font-size: 10px; color: var(--muted); }
+  .online-pill { display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; color: #34d399; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  /* Cards */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+  .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+
+  /* Profile Header */
+  .profile-banner { background: linear-gradient(135deg, #1f1726 0%, #14141b 100%); border: 1px solid rgba(244, 63, 94, 0.25); display: flex; align-items: center; justify-content: space-between; }
+  .avatar { width: 46px; height: 46px; border-radius: 12px; background: #232332; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: var(--accent); }
+  .p-info { flex: 1; margin-left: 12px; }
+  .p-nick { font-weight: 800; font-size: 16px; }
+  .p-id { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ELO & Stats */
+  .elo-row { display: flex; align-items: center; justify-content: space-between; }
+  .elo-badge { display: flex; align-items: center; gap: 10px; }
+  .lvl { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold); color: var(--gold); font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .elo-num { font-size: 22px; font-weight: 900; }
+  .elo-tag { font-size: 10px; background: rgba(244, 63, 94, 0.2); color: var(--accent); padding: 2px 6px; border-radius: 6px; font-weight: 800; }
+  .mini-stats { text-align: right; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .mini-stats b { color: var(--text); }
+  .bar-bg { height: 6px; background: #232330; border-radius: 99px; margin-top: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent-grad); border-radius: 99px; transition: width 0.3s; }
+
+  /* Mode Switcher */
+  .mode-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #0f0f15; padding: 5px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
+  .mode-btn { padding: 9px; border-radius: 9px; border: none; background: transparent; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
+  .mode-btn.active { background: var(--accent-grad); color: #fff; }
+
+  /* League Box */
+  .league-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .league-name { font-size: 20px; font-weight: 900; }
+  .open-tag { font-size: 10px; font-weight: 800; color: var(--accent); border: 1px solid rgba(244,63,94,0.4); padding: 3px 8px; border-radius: 6px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .stat-box { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  .stat-val { font-size: 18px; font-weight: 900; margin-top: 4px; }
+
+  /* Buttons */
+  .btn-primary { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent-grad); color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px rgba(244, 63, 94, 0.35); transition: transform 0.1s; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-2); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer; }
+  .btn-green { background: var(--green); color: #052e16; border: none; font-weight: 800; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; width: auto; }
+
+  /* Inputs */
+  .inp { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border); background: #0f0f15; color: #fff; font-size: 13px; margin-bottom: 8px; outline: none; }
+  .inp:focus { border-color: var(--accent); }
+
+  /* Views */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Match Screens */
+  .circle-timer { width: 84px; height: 84px; border-radius: 50%; border: 4px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; margin: 10px auto; box-shadow: 0 0 24px rgba(244,63,94,0.3); }
+  .ready-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0; }
+  .r-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--card-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--muted); }
+  .r-dot.ok { border-color: var(--green); background: rgba(16,185,129,0.15); color: var(--green); }
+  .cap-badge { display: inline-block; background: rgba(245,158,11,0.18); border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-top: 6px; }
+
+  /* Map Ban */
+  .turn-banner { background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.4); border-radius: 12px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .map-item { display: flex; align-items: center; justify-content: space-between; background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+  .map-item.banned { opacity: 0.45; border-color: rgba(244,63,94,0.3); }
+  .map-item.banned .map-name { text-decoration: line-through; }
+  .map-name { font-weight: 800; font-size: 14px; }
+  .map-sub { font-size: 11px; color: var(--muted); }
+
+  /* Rounds Vote */
+  .vote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .vote-btn { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 8px; text-align: center; cursor: pointer; color: var(--text); }
+  .vote-btn.selected { border-color: var(--accent); background: rgba(244,63,94,0.15); }
+
+  /* Gold Host Box */
+  .gold-box { background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(180,83,9,0.1)); border: 2px solid var(--gold); border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 0 20px rgba(245,158,11,0.18); }
+  .gold-title { font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 0.6px; }
+  .gold-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
+  /* Teams & Chat */
+  .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .team-col { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; }
+  .player-row { font-size: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .player-row:last-child { border-bottom: none; }
+  .chat-box { height: 170px; overflow-y: auto; background: #0f0f15; border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+  .chat-msg { margin-bottom: 6px; line-height: 1.4; }
+  .chat-form { display: flex; gap: 6px; }
+
+  /* Bottom Nav */
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #101017; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 12px; z-index: 50; }
+  .nav-item { background: none; border: none; color: var(--muted); font-size: 10px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 17px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TOP HEADER -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">CF</div>
+      <div>
+        <div class="brand-title">CF STANDOFFKNIFE</div>
+        <div class="brand-sub">FACEIT LEAGUE • LIVE</div>
+      </div>
+    </div>
+    <div class="online-pill">
+      <span class="dot"></span>
+      <span>Онлайн: <b id="onlineCount">1</b></span>
+    </div>
+  </div>
+
+  <!-- VIEW: PLAY -->
+  <div id="view-play" class="view active">
+    <div class="card profile-banner">
+      <div class="avatar" id="topAvatar">P</div>
+      <div class="p-info">
+        <div class="p-nick" id="topNick">Player</div>
+        <div class="p-id" id="topId">ID не привязан</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:900; color:var(--gold)" id="topElo">1000 ELO</div>
+        <div style="font-size:11px; color:var(--muted)" id="topKd">K/D 1.00</div>
+      </div>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-btn active" id="mode-5x5" onclick="setMode('5x5')">5x5 ЛИГА</button>
+      <button class="mode-btn" id="mode-1x1" onclick="setMode('1x1')">1x1 ДУЭЛЬ (без ID)</button>
+    </div>
+
+    <div class="card">
+      <div class="league-head">
+        <div class="league-name" id="leagueTitle">DEFAULT 5x5</div>
+        <span class="open-tag">ОТКРЫТА</span>
+      </div>
+      <div style="font-size:12px; color:var(--muted)" id="leagueDesc">Матч начинается автоматически при сборе 10 игроков</div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-lbl">В онлайне</div>
+          <div class="stat-val" id="statOnline">1</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">В поиске</div>
+          <div class="stat-val" id="statQueue">0 / 10</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-lbl">Ожидание</div>
+          <div class="stat-val" id="statTimer">00:00</div>
+        </div>
+      </div>
+
+      <div id="queuePlayersList" style="font-size:12px; color:var(--muted); margin-bottom:12px;"></div>
+
+      <button class="btn-primary" id="searchBtn" onclick="toggleSearch()">🔍 Найти матч</button>
+      <div id="botHelper" style="display:none; margin-top:8px;">
+        <button class="btn-secondary" onclick="fillWithBots()">⚡ Заполнить очередь ботами (тест старта)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: MATCH -->
+  <div id="view-match" class="view">
+    <div id="matchStageContainer"></div>
+  </div>
+
+  <!-- VIEW: FRIENDS -->
+  <div id="view-friends" class="view">
+    <div class="card">
+      <div class="card-title">Добавить друга по ID</div>
+      <div style="display:flex; gap:8px;">
+        <input class="inp" id="friendInp" placeholder="Введите ник или ID..." style="margin:0">
+        <button class="btn-primary btn-sm" onclick="addFriend()">Добавить</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Список друзей (<span id="friendsCount">0</span>)</div>
+      <div id="friendsList" style="font-size:13px; color:var(--muted)">Список пока пуст</div>
+    </div>
+  </div>
+
+  <!-- VIEW: SHOP -->
+  <div id="view-shop" class="view">
+    <div class="card">
+      <div class="card-title">Магазин лиги</div>
+      <div class="map-item">
+        <div>
+          <div class="map-name">CF PREMIUM (7 дней)</div>
+          <div class="map-sub">Приоритет капитана и золотой значок</div>
+        </div>
+        <button class="btn-primary btn-sm" onclick="alert('Покупка доступна после завершения калибровки!')">200 ₽</button>
+      </div>
+      <div class="map-item" style="margin:0">
+        <div>
+          <div class="map-name">ПРОПУСК QUALIFICATIONS</div>
+          <div class="map-sub">Доступ к закрытым турнирам</div>
+        </div>
+        <button class="btn-primary btn-sm" onclick="alert('Покупка доступна после завершения калибровки!')">800 ₽</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: PROFILE -->
+  <div id="view-profile" class="view">
+    <div class="card">
+      <div class="card-title">Привязка игрового профиля (1 раз навсегда)</div>
+      <div id="bindForm">
+        <input class="inp" id="bindNick" placeholder="Ваш ник в StandoffKnife">
+        <input class="inp" id="bindId" placeholder="Ваш ID в StandoffKnife (только цифры)">
+        <button class="btn-primary" onclick="saveBind()">Привязать навсегда</button>
+      </div>
+      <div id="bindLocked" style="display:none; font-size:13px;">
+        <div style="color:var(--green); font-weight:700; margin-bottom:4px;">✓ Профиль привязан без возможности изменения</div>
+        <div>Ник: <b id="lockedNick"></b> • ID: <b id="lockedId"></b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Калибровка и статистика K/D</div>
+      <div class="elo-row">
+        <div class="elo-badge">
+          <div class="lvl" id="profLvl">4</div>
+          <div>
+            <div class="elo-num" id="profElo">1000 <span class="elo-tag">ELO</span></div>
+            <div style="font-size:11px; color:var(--muted)" id="calibText">Калибровка: 0 / 5 матчей</div>
+          </div>
+        </div>
+        <div class="mini-stats">
+          <div>K/D: <b id="profKd">1.00</b></div>
+          <div>W/R: <b id="profWr">0%</b></div>
+        </div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="calibBar" style="width:0%"></div></div>
+
+      <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+        <div class="card-title">Записать результат сыгранного матча</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:8px;">
+          <select class="inp" id="resWin" style="margin:0">
+            <option value="1">Победа</option>
+            <option value="0">Поражение</option>
+          </select>
+          <input class="inp" id="resKills" type="number" placeholder="Убийства" style="margin:0">
+          <input class="inp" id="resDeaths" type="number" placeholder="Смерти" style="margin:0">
+        </div>
+        <button class="btn-secondary" onclick="recordMatchResult()">Обновить статистику K/D</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="nav">
+  <button class="nav-item" onclick="switchTab('friends')" id="nav-friends"><span class="nav-icon">👥</span>Друзья</button>
+  <button class="nav-item active" onclick="switchTab('play')" id="nav-play"><span class="nav-icon">▶</span>Играть</button>
+  <button class="nav-item" onclick="switchTab('match')" id="nav-match"><span class="nav-icon">⚔</span>Матч</button>
+  <button class="nav-item" onclick="switchTab('shop')" id="nav-shop"><span class="nav-icon">🛍</span>Магазин</button>
+  <button class="nav-item" onclick="switchTab('profile')" id="nav-profile"><span class="nav-icon">👤</span>Профиль</button>
+</div>
+
+<script>
+  const MAPS = ['Sandstone', 'Province', 'Breeze', 'Dune', 'Rust', 'Hanami', 'Prison'];
+  const CHANNEL_NAME = 'cf_standoffknife_live_v5';
+  const bc = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+  let myUid = localStorage.getItem('cf_uid') || ('u_' + Math.random().toString(36).slice(2, 9));
+  localStorage.setItem('cf_uid', myUid);
+
+  let profile = JSON.parse(localStorage.getItem('cf_profile') || 'null') || {
+    nick: 'Player_' + myUid.slice(2, 6).toUpperCase(),
+    id: '',
+    bound: false,
+    elo: 1000,
+    kills: 0,
+    deaths: 0,
+    wins: 0,
+    matches: 0,
+    friends: []
+  };
+
+  let currentMode = '5x5';
+  let searching = false;
+  let searchSeconds = 0;
+
+  let state = JSON.parse(localStorage.getItem('cf_shared_state') || 'null') || {
+    online: {},
+    queues: { '5x5': [], '1x1': [] },
+    match: null
+  };
+
+  function saveProfile() {
+    localStorage.setItem('cf_profile', JSON.stringify(profile));
+    renderProfile();
+  }
+
+  function broadcastState() {
+    localStorage.setItem('cf_shared_state', JSON.stringify(state));
+    if (bc) bc.postMessage({ type: 'SYNC', state });
+  }
+
+  if (bc) {
+    bc.onmessage = (e) => {
+      if (e.data && e.data.type === 'SYNC') {
+        state = e.data.state;
+        renderAll();
+      }
+    };
+  }
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cf_shared_state' && e.newValue) {
+      state = JSON.parse(e.newValue);
+      renderAll();
+    }
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+  }
+
+  function setMode(mode) {
+    if (searching) toggleSearch();
+    currentMode = mode;
+    document.getElementById('mode-5x5').classList.toggle('active', mode === '5x5');
+    document.getElementById('mode-1x1').classList.toggle('active', mode === '1x1');
+    document.getElementById('leagueTitle').textContent = mode === '5x5' ? 'DEFAULT 5x5' : 'DUEL 1x1';
+    document.getElementById('leagueDesc').textContent = mode === '5x5'
+      ? 'Матч начинается автоматически при сборе 10 игроков'
+      : 'Вход без привязки ID • Старт при сборе 2 игроков';
+    renderAll();
+  }
+
+  function saveBind() {
+    if (profile.bound) return;
+    const nick = document.getElementById('bindNick').value.trim();
+    const id = document.getElementById('bindId').value.trim();
+    if (!nick || !/^\d{4,15}$/.test(id)) {
+      alert('Введите корректный ник и числовой ID!');
+      return;
+    }
+    profile.nick = nick;
+    profile.id = id;
+    profile.bound = true;
+    saveProfile();
+    renderAll();
+  }
+
+  function recordMatchResult() {
+    const win = parseInt(document.getElementById('resWin').value, 10);
+    const k = Math.max(0, parseInt(document.getElementById('resKills').value || '0', 10));
+    const d = Math.max(0, parseInt(document.getElementById('resDeaths').value || '0', 10));
+    profile.matches += 1;
+    profile.wins += win;
+    profile.kills += k;
+    profile.deaths += d;
+    profile.elo += win ? 25 : -20;
+    document.getElementById('resKills').value = '';
+    document.getElementById('resDeaths').value = '';
+    saveProfile();
+  }
+
+  function addFriend() {
+    const val = document.getElementById('friendInp').value.trim();
+    if (!val) return;
+    profile.friends.push(val);
+    document.getElementById('friendInp').value = '';
+    saveProfile();
+  }
+
+  function renderProfile() {
+    const kd = profile.deaths > 0 ? (profile.kills / profile.deaths).toFixed(2) : (profile.kills > 0 ? profile.kills.toFixed(2) : '1.00');
+    const wr = profile.matches > 0 ? Math.round((profile.wins / profile.matches) * 100) : 0;
+    const calib = Math.min(5, profile.matches);
+
+    document.getElementById('topAvatar').textContent = profile.nick[0].toUpperCase();
+    document.getElementById('topNick').textContent = profile.nick;
+    document.getElementById('topId').textContent = profile.bound ? ('ID: ' + profile.id) : 'ID не привязан (доступен 1x1)';
+    document.getElementById('topElo').textContent = profile.elo + ' ELO';
+    document.getElementById('topKd').textContent = 'K/D ' + kd;
+
+    document.getElementById('profElo').innerHTML = profile.elo + ' <span class="elo-tag">ELO</span>';
+    document.getElementById('profKd').textContent = kd;
+    document.getElementById('profWr').textContent = wr + '%';
+    document.getElementById('calibText').textContent = calib < 5 ? `Калибровка: ${calib} / 5 матчей` : `Калибровка пройдена (${profile.matches} игр)`;
+    document.getElementById('calibBar').style.width = (calib * 20) + '%';
+
+    if (profile.bound) {
+      document.getElementById('bindForm').style.display = 'none';
+      document.getElementById('bindLocked').style.display = 'block';
+      document.getElementById('lockedNick').textContent = profile.nick;
+      document.getElementById('lockedId').textContent = profile.id;
+    }
+
+    document.getElementById('friendsCount').textContent = profile.friends.length;
+    document.getElementById('friendsList').innerHTML = profile.friends.length
+      ? profile.friends.map(f => `<div class="player-row">🟢 ${f}</div>`).join('')
+      : 'Список пока пуст';
+  }
+
+  function toggleSearch() {
+    if (currentMode === '5x5' && !profile.bound) {
+      alert('Для режима 5x5 сначала привяжите ник и ID во вкладке «Профиль» (или выберите 1x1 без ID).');
+      switchTab('profile');
+      return;
+    }
+    searching = !searching;
+    searchSeconds = 0;
+    if (searching) {
+      joinQueue();
+    } else {
+      leaveQueue();
+    }
+    renderAll();
+  }
+
+  function joinQueue() {
+    const q = state.queues[currentMode];
+    if (!q.find(p => p.uid === myUid)) {
+      q.push({ uid: myUid, nick: profile.nick, id: profile.id || 'NO-ID', elo: profile.elo, ts: Date.now() });
+    }
+    checkQueueStart();
+    broadcastState();
+  }
+
+  function leaveQueue() {
+    state.queues['5x5'] = state.queues['5x5'].filter(p => p.uid !== myUid);
+    state.queues['1x1'] = state.queues['1x1'].filter(p => p.uid !== myUid);
+    broadcastState();
+  }
+
+  function fillWithBots() {
+    const needed = currentMode === '5x5' ? 10 : 2;
+    const q = state.queues[currentMode];
+    const botNames = ['LowXI1te', 'BERZ', 'Almostawake', 'Gr1zu', 'L1p1x', 'str7ker', 'VETRELO', 'KoZeen', 'Wentex'];
+    let i = 0;
+    while (q.length < needed) {
+      const bName = botNames[i % botNames.length] + '_' + (i + 1);
+      q.push({ uid: 'bot_' + i + '_' + Date.now(), nick: bName, id: String(10000000 + i * 137), elo: 980 + i * 15, ts: Date.now(), isBot: true });
+      i++;
+    }
+    checkQueueStart();
+    broadcastState();
+    renderAll();
+  }
+
+  function checkQueueStart() {
+    const needed = currentMode === '5x5' ? 10 : 2;
+    const q = state.queues[currentMode];
+    if (q.length >= needed && !state.match) {
+      const players = q.slice(0, needed);
+      state.queues[currentMode] = q.slice(needed);
+      searching = false;
+
+      const half = needed / 2;
+      const teamA = players.slice(0, half);
+      const teamB = players.slice(half);
+      const capA = teamA[Math.floor(Math.random() * teamA.length)];
+      const capB = teamB[Math.floor(Math.random() * teamB.length)];
+
+      state.match = {
+        id: 'm_' + Date.now(),
+        mode: currentMode,
+        stage: 'accept', // accept -> ban -> rounds -> live
+        timer: 25,
+        players,
+        teamA,
+        teamB,
+        capA: capA.uid,
+        capB: capB.uid,
+        accepted: players.filter(p => p.isBot).map(p => p.uid),
+        bannedMaps: [], // { name, byTeam }
+        banTurn: 'A',
+        roundVotes: {},
+        chosenRounds: 13,
+        hostCap: Math.random() < 0.5 ? capA : capB,
+        chat: [{ nick: 'СИСТЕМА', text: 'Матч создан! Подтвердите готовность.' }]
+      };
+      switchTab('match');
+    }
+  }
+
+  function acceptMatch() {
+    if (!state.match) return;
+    if (!state.match.accepted.includes(myUid)) {
+      state.match.accepted.push(myUid);
+    }
+    if (state.match.accepted.length >= state.match.players.length) {
+      state.match.stage = 'ban';
+      state.match.timer = 25;
+      autoBotBanIfNeeded();
+    }
+    broadcastState();
+    renderAll();
+  }
+
+  function declineMatch() {
+    state.match = null;
+    searching = false;
+    broadcastState();
+    switchTab('play');
+    renderAll();
+  }
+
+  function banMap(mapName) {
+    const m = state.match;
+    if (!m || m.stage !== 'ban') return;
+    const activeCapUid = m.banTurn === 'A' ? m.capA : m.capB;
+    if (activeCapUid !== myUid) return;
+    if (m.bannedMaps.find(b => b.name === mapName)) return;
+
+    m.bannedMaps.push({ name: mapName, byTeam: m.banTurn });
+    if (m.bannedMaps.length >= MAPS.length - 1) {
+      m.stage = 'rounds';
+      m.timer = 15;
+      // Bots vote automatically
+      m.players.forEach(p => {
+        if (p.isBot) m.roundVotes[p.uid] = [10, 13, 16][Math.floor(Math.random() * 3)];
+      });
+    } else {
+      m.banTurn = m.banTurn === 'A' ? 'B' : 'A';
+      m.timer = 25;
+      autoBotBanIfNeeded();
+    }
+    broadcastState();
+    renderAll();
+  }
+
+  function autoBotBanIfNeeded() {
+    const m = state.match;
+    if (!m || m.stage !== 'ban') return;
+    const activeCapUid = m.banTurn === 'A' ? m.capA : m.capB;
+    const capPlayer = m.players.find(p => p.uid === activeCapUid);
+    if (capPlayer && capPlayer.isBot) {
+      setTimeout(() => {
+        if (!state.match || state.match.stage !== 'ban') return;
+        const avail = MAPS.filter(name => !state.match.bannedMaps.find(b => b.name === name));
+        if (avail.length > 1) {
+          const pick = avail[Math.floor(Math.random() * avail.length)];
+          state.match.bannedMaps.push({ name: pick, byTeam: state.match.banTurn });
+          if (state.match.bannedMaps.length >= MAPS.length - 1) {
+            state.match.stage = 'rounds';
+            state.match.timer = 15;
+            state.match.players.forEach(p => {
+              if (p.isBot) state.match.roundVotes[p.uid] = [10, 13, 16][Math.floor(Math.random() * 3)];
+            });
+          } else {
+            state.match.banTurn = state.match.banTurn === 'A' ? 'B' : 'A';
+            state.match.timer = 25;
+            autoBotBanIfNeeded();
+          }
+          broadcastState();
+          renderAll();
+        }
+      }, 1500);
+    }
+  }
+
+  function voteRounds(num) {
+    const m = state.match;
+    if (!m || m.stage !== 'rounds') return;
+    m.roundVotes[myUid] = num;
+    if (Object.keys(m.roundVotes).length >= m.players.length) {
+      finishRoundVote();
+    }
+    broadcastState();
+    renderAll();
+  }
+
+  function finishRoundVote() {
+    const m = state.match;
+    const counts = { 10: 0, 13: 0, 16: 0 };
+    Object.values(m.roundVotes).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+    let best = 13, max = -1;
+    [10, 13, 16].forEach(r => { if (counts[r] > max) { max = counts[r]; best = r; } });
+    m.chosenRounds = best;
+    m.stage = 'live';
+    m.chat.push({ nick: 'СИСТЕМА', text: `Выбрано раундов: ${best}. Хост лобби: ${m.hostCap.nick} (ID: ${m.hostCap.id})` });
+  }
+
+  function sendChat() {
+    const inp = document.getElementById('chatInput');
+    if (!inp || !state.match) return;
+    const text = inp.value.trim();
+    if (!text) return;
+    state.match.chat.push({ nick: profile.nick, text });
+    inp.value = '';
+    broadcastState();
+    renderMatch();
+  }
+
+  function copyHostId(id) {
+    if (navigator.clipboard) navigator.clipboard.writeText(id);
+    alert('ID капитана скопирован: ' + id);
+  }
+
+  function renderMatch() {
+    const box = document.getElementById('matchStageContainer');
+    const m = state.match;
+    if (!m) {
+      box.innerHTML = `<div class="card" style="text-align:center; padding:30px 14px;">
+        <div style="font-weight:800; font-size:15px; margin-bottom:6px;">Активного матча нет</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">Нажмите «Найти матч» на главном экране</div>
+        <button class="btn-primary" onclick="switchTab('play')">Перейти к поиску</button>
+      </div>`;
+      return;
+    }
+
+    const amICap = (m.capA === myUid || m.capB === myUid);
+
+    if (m.stage === 'accept') {
+      const iAccepted = m.accepted.includes(myUid);
+      box.innerHTML = `<div class="card" style="text-align:center;">
+        <div class="circle-timer">${m.timer}</div>
+        <div style="font-size:20px; font-weight:900;">МАТЧ НАЙДЕН</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">${m.mode.toUpperCase()} • ${m.teamA.find(p=>p.uid===myUid) ? 'Команда А' : 'Команда Б'}</div>
+        ${amICap ? '<div class="cap-badge">КАПИТАН</div>' : ''}
+        <div class="ready-dots">
+          ${m.players.map(p => `<div class="r-dot ${m.accepted.includes(p.uid) ? 'ok' : ''}">${m.accepted.includes(p.uid) ? '✓' : '👤'}</div>`).join('')}
+        </div>
+        <div style="font-size:13px; font-weight:700; margin-bottom:14px;">${m.accepted.length} / ${m.players.length} готовы</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button class="btn-secondary" onclick="declineMatch()">ОТКЛОНИТЬ</button>
+          <button class="btn-primary" onclick="acceptMatch()" ${iAccepted ? 'disabled style="opacity:0.6"' : ''}>${iAccepted ? 'ПРИНЯТО ✓' : 'ПРИНЯТЬ'}</button>
+        </div>
+      </div>`;
+      return;
+    }
+
+    if (m.stage === 'ban') {
+      const activeCapUid = m.banTurn === 'A' ? m.capA : m.capB;
+      const isMyTurn = activeCapUid === myUid;
+      box.innerHTML = `<div class="card">
+        <div class="card-title">БАН КАРТ (${m.bannedMaps.length}/${MAPS.length - 1}) • Только 2 капитана</div>
+        <div class="turn-banner">
+          <div>
+            <div style="font-weight:800; font-size:13px;">${isMyTurn ? 'Ваш ход — забаньте карту' : 'Ход капитана команды ' + m.banTurn}</div>
+            <div style="font-size:11px; color:var(--muted)">Команда ${m.banTurn}</div>
+          </div>
+          <div style="font-weight:900; color:var(--accent)">0:${String(m.timer).padStart(2,'0')}</div>
+        </div>
+        ${MAPS.map(name => {
+          const banned = m.bannedMaps.find(b => b.name === name);
+          return `<div class="map-item ${banned ? 'banned' : ''}">
+            <div>
+              <div class="map-name">${name}</div>
+              <div class="map-sub">${banned ? 'Забанено командой ' + banned.byTeam : (isMyTurn ? 'Нажмите, чтобы забанить' : 'Ожидание хода капитана')}</div>
+            </div>
+            ${!banned && isMyTurn ? `<button class="btn-primary btn-sm" onclick="banMap('${name}')">БАН</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>`;
+      return;
+    }
+
+    if (m.stage === 'rounds') {
+      const myVote = m.roundVotes[myUid];
+      const counts = { 10: 0, 13: 0, 16: 0 };
+      Object.values(m.roundVotes).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+      box.innerHTML = `<div class="card" style="text-align:center;">
+        <div class="card-title">ГОЛОСОВАНИЕ ВСЕХ ИГРОКОВ ЗА РАУНДЫ</div>
+        <div style="font-size:16px; font-weight:800;">Выберите количество раундов (${m.timer}с)</div>
+        <div class="vote-grid">
+          ${[10, 13, 16].map(r => `
+            <button class="vote-btn ${myVote === r ? 'selected' : ''}" onclick="voteRounds(${r})">
+              <div style="font-size:20px; font-weight:900;">${r}</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:4px;">Голосов: ${counts[r]}</div>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
+      return;
+    }
+
+    // LIVE LOBBY STAGE
+    const pickedMap = MAPS.find(name => !m.bannedMaps.find(b => b.name === name)) || 'Sandstone';
+    box.innerHTML = `
+      <div class="gold-box">
+        <div class="gold-title">👑 ХОСТ ЛОББИ (СЛУЧАЙНЫЙ КАПИТАН) • КАРТА: ${pickedMap.toUpperCase()} • ${m.chosenRounds} РАУНДОВ</div>
+        <div class="gold-row">
+          <div>
+            <div style="font-size:16px; font-weight:900;">${m.hostCap.nick}</div>
+            <div style="font-size:12px; color:var(--gold); font-weight:700;">ID: ${m.hostCap.id}</div>
+          </div>
+          <button class="btn-primary btn-sm" style="background:var(--gold); color:#000;" onclick="copyHostId('${m.hostCap.id}')">Копировать ID</button>
+        </div>
+      </div>
+
+      <div class="teams-grid">
+        <div class="team-col">
+          <div class="card-title" style="color:#60a5fa;">🛡 Команда А • Спецназ</div>
+          ${m.teamA.map(p => `<div class="player-row"><b>${p.nick}</b> ${p.uid===m.capA?'👑':''}<div style="font-size:10px;color:var(--muted)">ELO ${p.elo}</div></div>`).join('')}
+        </div>
+        <div class="team-col">
+          <div class="card-title" style="color:#f87171;">🔥 Команда Б • Террористы</div>
+          ${m.teamB.map(p => `<div class="player-row"><b>${p.nick}</b> ${p.uid===m.capB?'👑':''}<div style="font-size:10px;color:var(--muted)">ELO ${p.elo}</div></div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💬 Чат лобби (видят все игроки)</div>
+        <div class="chat-box" id="chatBox">
+          ${m.chat.map(c => `<div class="chat-msg"><b style="color:var(--accent)">${c.nick}:</b> ${c.text}</div>`).join('')}
+        </div>
+        <div class="chat-form">
+          <input class="inp" id="chatInput" placeholder="Написать сообщение..." style="margin:0" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn-primary btn-sm" onclick="sendChat()">➤</button>
+        </div>
+        <button class="btn-secondary" style="margin-top:10px;" onclick="declineMatch()">Завершить / Покинуть матч</button>
+      </div>
+    `;
+  }
+
+  function renderAll() {
+    const now = Date.now();
+    const activeOnline = Object.keys(state.online).filter(k => now - state.online[k] < 3500).length || 1;
+    document.getElementById('onlineCount').textContent = activeOnline;
+    document.getElementById('statOnline').textContent = activeOnline;
+
+    const needed = currentMode === '5x5' ? 10 : 2;
+    const q = state.queues[currentMode];
+    document.getElementById('statQueue').textContent = `${q.length} / ${needed}`;
+
+    const mins = String(Math.floor(searchSeconds / 60)).padStart(2, '0');
+    const secs = String(searchSeconds % 60).padStart(2, '0');
+    document.getElementById('statTimer').textContent = searching ? `${mins}:${secs}` : '00:00';
+
+    const btn = document.getElementById('searchBtn');
+    btn.textContent = searching ? `⏳ Поиск игроков (${q.length}/${needed})... Отменить` : '🔍 Найти матч';
+    btn.style.background = searching ? '#272734' : 'var(--accent-grad)';
+    document.getElementById('botHelper').style.display = searching ? 'block' : 'none';
+
+    document.getElementById('queuePlayersList').innerHTML = q.length
+      ? 'В очереди: ' + q.map(p => `<b>${p.nick}</b>`).join(', ')
+      : 'Очередь пуста — будьте первым';
+
+    renderProfile();
+    renderMatch();
+  }
+
+  // Heartbeat & 1-second sync loop
+  setInterval(() => {
+    const now = Date.now();
+    state.online[myUid] = now;
+
+    // Clean inactive users every 1 second
+    Object.keys(state.online).forEach(uid => {
+      if (now - state.online[uid] > 3500) delete state.online[uid];
+    });
+    ['5x5', '1x1'].forEach(m => {
+      state.queues[m] = state.queues[m].filter(p => p.isBot || (now - p.ts < 3500));
+    });
+
+    if (searching) {
+      searchSeconds++;
+      const q = state.queues[currentMode];
+      const me = q.find(p => p.uid === myUid);
+      if (me) me.ts = now;
+      else joinQueue();
+      checkQueueStart();
+    }
+
+    if (state.match && state.match.stage !== 'live') {
+      state.match.timer = Math.max(0, state.match.timer - 1);
+      if (state.match.timer === 0) {
+        if (state.match.stage === 'accept') {
+          declineMatch();
+          return;
+        } else if (state.match.stage === 'ban') {
+          const avail = MAPS.filter(name => !state.match.bannedMaps.find(b => b.name === name));
+          if (avail.length > 1) {
+            state.match.bannedMaps.push({ name: avail[0], byTeam: state.match.banTurn });
+            if (state.match.bannedMaps.length >= MAPS.length - 1) {
+              state.match.stage = 'rounds';
+              state.match.timer = 15;
+            } else {
+              state.match.banTurn = state.match.banTurn === 'A' ? 'B' : 'A';
+              state.match.timer = 25;
+              autoBotBanIfNeeded();
+            }
+          }
+        } else if (state.match.stage === 'rounds') {
+          finishRoundVote();
+        }
+      }
+    }
+
+    broadcastState();
+    renderAll();
+  }, 1000);
+
+  window.addEventListener('beforeunload', () => {
+    delete state.online[myUid];
+    leaveQueue();
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
