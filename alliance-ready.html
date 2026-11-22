@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ALLIANCE FACEIT | R:E</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main: #0c0809;
+      --bg-card: #181012;
+      --bg-card-2: #221518;
+      --border: #3a1d22;
+      --accent: #e52535;
+      --accent-dark: #9e1022;
+      --accent-glow: rgba(229, 37, 53, 0.25);
+      --text-main: #ffffff;
+      --text-muted: #9c8a8d;
+      --warn-border: #8c5819;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-main);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(229, 37, 53, 0.18), transparent 55%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 28px 28px, 28px 28px;
+      color: var(--text-main);
+      padding-bottom: 90px;
+      min-height: 100vh;
+    }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(12, 8, 9, 0.92); backdrop-filter: blur(10px); padding: 12px 16px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .topbar-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+    .brand-logo { width: 30px; height: 30px; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; font-style: italic; box-shadow: 0 0 12px var(--accent-glow); }
+    .brand-text { line-height: 1; font-size: 13px; }
+    .brand-sub { font-size: 9px; color: var(--accent); letter-spacing: 1.5px; margin-top: 2px; }
+    .mode-pill { background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .balance-pill { background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; color: #ff6b78; display: flex; align-items: center; gap: 4px; }
+    .verify-banner { margin-top: 10px; background: linear-gradient(90deg, rgba(160, 82, 18, 0.35), rgba(229, 37, 53, 0.25)); border: 1px solid var(--warn-border); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 11px; font-weight: 800; color: #ffd180; cursor: pointer; }
+    .container { padding: 14px 16px; max-width: 520px; margin: 0 auto; }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: linear-gradient(180deg, var(--bg-card) 0%, #120b0d 100%); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; position: relative; overflow: hidden; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 15px; font-weight: 800; }
+    .card-sub { font-size: 11px; color: var(--text-muted); }
+    .btn { border: none; border-radius: 10px; padding: 9px 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .btn:active { transform: scale(0.97); }
+    .btn-red { background: linear-gradient(180deg, #f02d3d 0%, #b81825 100%); color: #fff; box-shadow: 0 4px 14px rgba(229, 37, 53, 0.35); }
+    .btn-dark { background: var(--bg-card-2); color: #fff; border: 1px solid var(--border); }
+    .hero-play { background: radial-gradient(circle at 80% 30%, rgba(229, 37, 53, 0.38), transparent 60%), linear-gradient(135deg, #1d1013 0%, #11090b 100%); border: 1px solid var(--border); border-radius: 18px; padding: 18px 16px; margin-bottom: 12px; position: relative; overflow: hidden; }
+    .hero-wm { position: absolute; right: -10px; bottom: 42px; font-size: 28px; font-weight: 900; font-style: italic; color: rgba(255, 255, 255, 0.06); transform: rotate(-12deg); pointer-events: none; line-height: 0.95; }
+    .hero-title { font-size: 28px; font-weight: 900; font-style: italic; letter-spacing: 1px; }
+    .hero-online { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .mode-switch-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+    .mode-tab { padding: 10px; border-radius: 999px; text-align: center; font-size: 11px; font-weight: 800; cursor: pointer; border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); color: var(--text-muted); }
+    .mode-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+    .party-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .icon-square { width: 38px; height: 38px; border-radius: 10px; background: rgba(229, 37, 53, 0.14); border: 1px solid rgba(229, 37, 53, 0.35); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 16px; flex-shrink: 0; }
+    .lobby-bg-num { position: absolute; right: 12px; bottom:-8px; font-size: 68px; font-weight: 900; font-style: italic; color: rgba(229, 37, 53, 0.08); pointer-events: none; line-height: 1; }
+    .lobby-top { display: flex; align-items: center; justify-content: space-between; }
+    .lobby-name { font-size: 17px; font-weight: 900; font-style: italic; }
+    .lobby-count { font-size: 15px; font-weight: 800; margin-right: 10px; }
+    .players-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .player-slot { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 6px 8px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; }
+    .player-slot.me { border-color: var(--accent); background: rgba(229, 37, 53, 0.14); }
+    .lvl-badge { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ff8a00; color: #ff8a00; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .lobby-footer { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); }
+    .bars-wrap { display: flex; align-items: flex-end; justify-content: space-between; height: 60px; gap: 4px; margin: 12px 0 6px; }
+    .bar { flex: 1; background: #2f2326; border-radius: 3px; }
+    .bar.peak { background: #6c63ff; }
+    .bar.warn { background: var(--accent); }
+    .night-bonus { margin-top: 10px; background: rgba(76, 68, 182, 0.22); border: 1px solid rgba(108, 99, 255, 0.45); border-radius: 10px; padding: 9px 10px; font-size: 11px; color: #c5c1ff; }
+    .profile-banner { background: linear-gradient(135deg, #2d1216 0%, #160c0e 100%); border: 1px solid var(--border); border-radius: 18px; padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; position: relative; overflow: hidden; }
+    .banner-wm { position: absolute; right: -6px; top: 4px; font-size: 38px; font-weight: 900; color: rgba(255, 255, 255, 0.06); line-height: 0.9; pointer-events: none; }
+    .avatar { width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--accent); background: #2b1519; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--accent); flex-shrink: 0; z-index: 2; }
+    .profile-nick { font-size: 22px; font-weight: 900; }
+    .profile-id { font-size: 12px; color: var(--text-muted); margin: 2px 0 6px; }
+    .tag-default { display: inline-block; background: rgba(229, 37, 53, 0.15); border: 1px solid var(--accent); color: #ff7a85; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .quick-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .quick-title { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+    .quick-desc { font-size: 10px; color: var(--text-muted); line-height: 1.3; }
+    .esports-banner { background: linear-gradient(90deg, rgba(88, 76, 175, 0.35), rgba(45, 36, 95, 0.35)); border: 1px solid rgba(125, 112, 230, 0.45); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; cursor: pointer; }
+    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 12px; }
+    .day-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 8px; padding: 6px 2px; text-align: center; font-size: 9px; color: var(--text-muted); }
+    .day-item.claimed { border-color: var(--accent); background: rgba(229, 37, 53, 0.15); color: #fff; }
+    .day-val { font-size: 11px; font-weight: 800; color: #fff; margin-top: 4px; }
+    .acc-row { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .acc-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .acc-val { font-size: 14px; font-weight: 800; margin-top: 2px; }
+    .menu-row { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; cursor: pointer; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14, 9, 11, 0.96); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 6px 10px; z-index: 60; }
+    .nav-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; padding: 6px 2px; border-radius: 12px; cursor: pointer; }
+    .nav-btn.active { background: rgba(229, 37, 53, 0.16); color: #fff; border: 1px solid rgba(229, 37, 53, 0.35); }
+    .nav-icon { font-size: 16px; }
+    .toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: #251316; border: 1px solid var(--accent); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; z-index: 100; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.6); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-logo">A</div>
+        <div>
+          <div class="brand-text">ALLIANCE</div>
+          <div class="brand-sub">FACEIT</div>
+        </div>
+      </div>
+      <div class="mode-pill" onclick="toggleFormat()">
+        <span class="mode-dot"></span>
+        <span id="formatText">КЛАССИКА</span>
+      </div>
+      <div class="balance-pill">⚡ <span id="balanceVal">2095</span></div>
+    </div>
+    <div class="verify-banner" onclick="showToast('Отправьте скриншот профиля Standoff 2 боту для проверки часов')">
+      ⚠️ ПОДТВЕРДИ ЧАСЫ В ИГРЕ &gt;
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="screen-play" class="screen active">
+      <div class="hero-play">
+        <div class="hero-wm">PLAY TO<br>ALLIANCE<br>FACEIT</div>
+        <div class="hero-title">ИГРАТЬ</div>
+        <div class="hero-online">В очередях сейчас: <b style="color:#fff" id="queueCount">7</b></div>
+        <div class="mode-switch-row">
+          <div class="mode-tab active" id="tabDef" onclick="switchQueue('def')">DEFAULT · MOBILE</div>
+          <div class="mode-tab" id="tabQual" onclick="switchQueue('qual')">🔒 QUALIFICATION</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="party-box">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="icon-square">👥</div>
+            <div>
+              <div class="card-title">Собери пати</div>
+              <div class="card-sub">До 2 игроков в одной команде · 3 с Premium</div>
+            </div>
+          </div>
+          <button class="btn btn-dark" onclick="showToast('Ссылка-приглашение в пати скопирована!')">Пати</button>
+        </div>
+      </div>
+
+      <div id="lobbiesContainer"></div>
+
+      <div class="card">
+        <div class="card-header" style="margin-bottom:4px;">
+          <div class="card-title">Когда играют</div>
+          <div class="card-sub">пик 22:00–01:00</div>
+        </div>
+        <div class="bars-wrap" id="chartBars"></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+          <span>00</span><span>06</span><span>12</span><span>18</span><span>24</span>
+        </div>
+        <div class="night-bonus">
+          🌙 <b>Сейчас ночной бонус</b> · +10 AC за каждый сыгранный матч с 02:00 до 11:00
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+      <div class="profile-banner">
+        <div class="banner-wm">ALLIANCE<br>FACEIT</div>
+        <div class="avatar" id="avatarLetter">K</div>
+        <div style="position:relative;z-index:2;">
+          <div style="font-size:11px;color:var(--text-muted);">Без места</div>
+          <div class="profile-nick" id="profileNickDisplay">KOLDER</div>
+          <div class="profile-id">ID: <span id="profileIdDisplay">10194206</span></div>
+          <div class="tag-default">DEFAULT</div>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-card" onclick="spinWheel()">
+          <div class="icon-square">🎡</div>
+          <div>
+            <div class="quick-title">Крутить колесо</div>
+            <div class="quick-desc" id="wheelStatus">Бесплатное вращение доступно</div>
+          </div>
+        </div>
+        <div class="quick-card" onclick="showToast('Ближайший турнир откроется в 20:00 МСК')">
+          <div class="icon-square">🏆</div>
+          <div>
+            <div class="quick-title">Турниры</div>
+            <div class="quick-desc">Сетка, трансляции, ставки</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="esports-banner" onclick="switchTab('top')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="icon-square" style="border-color:rgba(125,112,230,0.5);color:#c5c1ff;">👥</div>
+          <div>
+            <div class="card-title">Киберспорт</div>
+            <div class="card-sub">Рейтинг команд и игроков платформы</div>
+          </div>
+        </div>
+        <span style="color:var(--text-muted);font-weight:800;">&gt;</span>
+      </div>
+
+      <div class="card">
+        <div class="party-box">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="icon-square" style="background:var(--accent);color:#fff;font-weight:900;" id="streakBadge">0</div>
+            <div>
+              <div class="card-title" style="font-size:13px;">ЕЖЕДНЕВНАЯ НАГРАДА</div>
+              <div class="card-sub" id="dailySub">Забери награду за сегодня</div>
+            </div>
+          </div>
+          <button class="btn btn-red" id="claimBtn" onclick="claimDaily()">Забрать</button>
+        </div>
+        <div class="days-grid" id="daysGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Аккаунт</div>
+          <div class="card-sub">ник, ID и устройство</div>
+        </div>
+        <div class="acc-row">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="icon-square">👤</div>
+            <div>
+              <div class="acc-label">НИК</div>
+              <div class="acc-val" id="accNick">Kolder</div>
+            </div>
+          </div>
+          <button class="btn btn-red" style="padding:6px 10px;font-size:11px;" onclick="changeNick()">Сменить<br><span style="font-size:9px;opacity:0.85;">50 AC</span></button>
+        </div>
+        <div class="acc-row">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="icon-square">🎯</div>
+            <div>
+              <div class="acc-label">ИГРОВОЙ ID</div>
+              <div class="acc-val" id="accId">10194206</div>
+            </div>
+          </div>
+          <button class="btn btn-red" style="padding:6px 10px;font-size:11px;" onclick="changeId()">Сменить<br><span style="font-size:9px;opacity:0.85;">бесплатно</span></button>
+        </div>
+        <div class="acc-row" style="margin-bottom:0;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="icon-square">📱</div>
+            <div>
+              <div class="acc-label">УСТРОЙСТВО</div>
+              <div class="acc-val" id="accDevice">Телефон / Планшет</div>
+            </div>
+          </div>
+          <button class="btn btn-red" style="padding:6px 10px;font-size:11px;" onclick="changeDevice()">Сменить<br><span style="font-size:9px;opacity:0.85;">250 AC</span></button>
+        </div>
+      </div>
+
+      <div class="menu-row" onclick="showToast('Сыграйте 1 матч для открытия статистики сезона')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="icon-square">📊</div>
+          <div>
+            <div class="card-title">Статистика сезона</div>
+            <div class="card-sub">ELO по дням, карты, лучшие напарники</div>
+          </div>
+        </div>
+        <span style="color:var(--text-muted);">&gt;</span>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">О СЕБЕ</div>
+          <button class="btn btn-dark" style="padding:6px 10px;font-size:11px;" onclick="editBio()">📝 Изменить</button>
+        </div>
+        <div class="card-sub" id="bioText" style="font-size:12px;line-height:1.4;margin-bottom:10px;">
+          Расскажи о себе, добавь соцсети и скрины своего конфига — их увидят другие игроки.
+        </div>
+        <div class="tag-default" style="background:rgba(255,255,255,0.05);border-color:var(--border);color:#fff;">📱 MOBILE</div>
+      </div>
+
+      <div class="menu-row" onclick="showToast('Карточка профиля сохранена!')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="icon-square">🖼️</div>
+          <div>
+            <div class="card-title">Карточка профиля</div>
+            <div class="card-sub">Скачать картинку со статистикой</div>
+          </div>
+        </div>
+        <span>⬇</span>
+      </div>
+
+      <div class="menu-row" onclick="showToast('Магазин кастомизации и Premium скоро откроется')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="icon-square">🛍️</div>
+          <div>
+            <div class="card-title">Кастомизация</div>
+            <div class="card-sub">Баннеры, рамки, Premium и x2 буст</div>
+          </div>
+        </div>
+        <span style="color:var(--text-muted);">&gt;</span>
+      </div>
+    </div>
+
+    <div id="screen-top" class="screen">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏆 Топ игроков сезона</div>
+          <div class="card-sub">Обновляется каждый час</div>
+        </div>
+        <div class="acc-row"><span><b>#1 s9me</b> · 10 LVL</span><span style="color:#ff6b78;font-weight:800;">2410 ELO</span></div>
+        <div class="acc-row"><span><b>#2 coldssiemens</b> · 8 LVL</span><span style="color:#ff6b78;font-weight:800;">1980 ELO</span></div>
+        <div class="acc-row"><span><b>#3 kiyoshi</b> · 7 LVL</span><span style="color:#ff6b78;font-weight:800;">1845 ELO</span></div>
+        <div class="acc-row" style="margin-bottom:0;"><span><b>#4 Asfaria</b> · 6 LVL</span><span style="color:#ff6b78;font-weight:800;">1690 ELO</span></div>
+      </div>
+    </div>
+
+    <div id="screen-inv" class="screen">
+      <div class="card" style="text-align:center;padding:30px 16px;">
+        <div style="font-size:36px;margin-bottom:8px;">📦</div>
+        <div class="card-title">Инвентарь пуст</div>
+        <div class="card-sub" style="margin-top:4px;">Выигрывай матчи, крути колесо фортуны или обменивай AC на скины Standoff 2</div>
+      </div>
+    </div>
+
+    <div id="screen-more" class="screen">
+      <div class="menu-row" onclick="showToast('Правила честной игры ALLIANCE FACEIT')"><span>📜 Правила платформы</span><span>&gt;</span></div>
+      <div class="menu-row" onclick="showToast('Обратитесь в поддержку через Telegram-бота')"><span>💬 Поддержка и репорты</span><span>&gt;</span></div>
+      <div class="menu-row" onclick="showToast('Подписывайтесь на @alliance_faceit')"><span>📢 Наш Telegram-канал</span><span>&gt;</span></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')"><span class="nav-icon">👤</span>ПРОФИЛЬ</button>
+    <button class="nav-btn active" id="nav-play" onclick="switchTab('play')"><span class="nav-icon">▶</span>ИГРАТЬ</button>
+    <button class="nav-btn" id="nav-top" onclick="switchTab('top')"><span class="nav-icon">🏆</span>ТОП</button>
+    <button class="nav-btn" id="nav-inv" onclick="switchTab('inv')"><span class="nav-icon">📦</span>ИНВЕНТАРЬ</button>
+    <button class="nav-btn" id="nav-more" onclick="switchTab('more')"><span class="nav-icon">⊞</span>ЕЩЁ</button>
+  </nav>
+
+  <script>
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.expand();
+      window.Telegram.WebApp.ready();
+    }
+    let state = { balance: 2095, nick: 'Kolder', gameId: '10194206', device: 'Телефон / Планшет', format: 'КЛАССИКА', dailyClaimed: false, streak: 0, wheelUsed: false, joinedLobby: null };
+    const lobbiesData = [
+      { id: 1, elo: 1352, parties: 1, players: [{ name: 'ShaLun', lvl: 1 }, { name: 'kivviol666', lvl: '🔒' }, { name: 'kiyoshi', lvl: 7 }, { name: 'coldssiemens', lvl: 8 }, { name: 's9me', lvl: 10 }, { name: 'Asfaria', lvl: 6 }, { name: 'kl4mech', lvl: '🔒' }] },
+      { id: 2, elo: 0, parties: 0, players: [] },
+      { id: 3, elo: 0, parties: 0, players: [] },
+      { id: 4, elo: 0, parties: 0, players: [] },
+      { id: 5, elo: 0, parties: 0, players: [] }
+    ];
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2600);
+    }
+    function updateUI() {
+      document.getElementById('balanceVal').textContent = state.balance;
+      document.getElementById('profileNickDisplay').textContent = state.nick.toUpperCase();
+      document.getElementById('accNick').textContent = state.nick;
+      document.getElementById('avatarLetter').textContent = state.nick[0].toUpperCase();
+      document.getElementById('profileIdDisplay').textContent = state.gameId;
+      document.getElementById('accId').textContent = state.gameId;
+      document.getElementById('accDevice').textContent = state.device;
+      document.getElementById('formatText').textContent = state.format;
+      renderLobbies();
+    }
+    function switchTab(tab) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('screen-' + tab).classList.add('active');
+      document.getElementById('nav-' + tab).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function toggleFormat() {
+      state.format = state.format === 'КЛАССИКА' ? '2x2 НАПАРНИКИ' : 'КЛАССИКА';
+      updateUI();
+      showToast('Режим изменён: ' + state.format);
+    }
+    function switchQueue(q) {
+      if (q === 'qual') { showToast('Для Qualification нужно подтвердить часы в игре'); return; }
+      document.getElementById('tabDef').classList.add('active');
+    }
+    function toggleLobby(id) {
+      if (state.joinedLobby === id) {
+        state.joinedLobby = null;
+        showToast('Вы вышли из Лобби #' + id);
+      } else {
+        state.joinedLobby = id;
+        showToast('Вы вошли в Лобби #' + id + '! Ожидание игроков...');
+      }
+      renderLobbies();
+    }
+    function renderLobbies() {
+      const wrap = document.getElementById('lobbiesContainer');
+      wrap.innerHTML = '';
+      let totalInQueue = 0;
+      lobbiesData.forEach(l => {
+        let list = [...l.players];
+        if (state.joinedLobby === l.id) list.push({ name: state.nick, lvl: 5, me: true });
+        totalInQueue += list.length;
+        const isJoined = state.joinedLobby === l.id;
+        let bodyHtml = list.length === 0 ? `<div class="card-sub" style="margin-top:6px;">Пока никого — будь первым</div>` :
+          `<div class="players-grid">${list.map(p => `<div class="player-slot ${p.me ? 'me' : ''}"><span>${p.name}</span><span class="lvl-badge">${p.lvl}</span></div>`).join('')}</div><div class="lobby-footer"><span>Средний ELO: <b style="color:#fff">${l.elo || 1350}</b></span><span>👥 ${l.parties || 1} пати</span></div>`;
+        wrap.innerHTML += `<div class="card"><div class="lobby-bg-num">0${l.id}</div><div class="lobby-top"><div class="lobby-name">ЛОББИ #${l.id}</div><div style="display:flex;align-items:center;"><span class="lobby-count">${list.length}/10</span><button class="btn ${isJoined ? 'btn-dark' : 'btn-red'}" onclick="toggleLobby(${l.id})">${isJoined ? 'Выйти' : 'Войти'}</button></div></div>${bodyHtml}</div>`;
+      });
+      document.getElementById('queueCount').textContent = totalInQueue;
+    }
+    function renderChart() {
+      const heights = [90, 95, 50, 15, 8, 8, 8, 8, 8, 12, 20, 35, 55, 65, 70, 75, 75, 75, 70, 55];
+      const chart = document.getElementById('chartBars');
+      heights.forEach((h, idx) => {
+        let cls = 'bar' + (idx === 2 ? ' peak' : idx === 3 ? ' warn' : '');
+        chart.innerHTML += `<div class="${cls}" style="height:${h}%;"></div>`;
+      });
+    }
+    const rewards = [10, 15, 20, 25, 30, 40, 75];
+    function renderDaily() {
+      const grid = document.getElementById('daysGrid');
+      grid.innerHTML = '';
+      rewards.forEach((val, i) => {
+        const isBonus = i === 6, claimed = i < state.streak;
+        grid.innerHTML += `<div class="day-item ${claimed ? 'claimed' : ''}"><div>${isBonus ? 'БОНУС' : 'ДЕНЬ ' + (i + 1)}</div><div style="margin-top:3px;color:${isBonus ? '#ff6b78' : '#9c8a8d'};">${isBonus ? '👑' : '⚡'}</div><div class="day-val">${val}</div></div>`;
+      });
+    }
+    function claimDaily() {
+      if (state.dailyClaimed) return showToast('Награда за сегодня уже получена!');
+      const reward = rewards[state.streak] || 10;
+      state.balance += reward; state.streak += 1; state.dailyClaimed = true;
+      document.getElementById('streakBadge').textContent = state.streak;
+      document.getElementById('dailySub').textContent = 'Награда получена! Возвращайся завтра';
+      const btn = document.getElementById('claimBtn'); btn.textContent = 'Получено'; btn.className = 'btn btn-dark';
+      renderDaily(); updateUI(); showToast(`+${reward} AC зачислено на баланс!`);
+    }
+    function spinWheel() {
+      if (state.wheelUsed) return showToast('Бесплатное вращение уже использовано сегодня');
+      const prizes = [15, 25, 50, 100, 200];
+      const win = prizes[Math.floor(Math.random() * prizes.length)];
+      state.balance += win; state.wheelUsed = true; document.getElementById('wheelStatus').textContent = 'Следующее завтра';
+      updateUI(); showToast(`🎉 Вы выиграли ${win} AC в колесе фортуны!`);
+    }
+    function changeNick() {
+      if (state.balance < 50) return showToast('Недостаточно AC (нужно 50 AC)');
+      const n = prompt('Введите новый игровой ник:', state.nick);
+      if (n && n.trim()) { state.balance -= 50; state.nick = n.trim(); updateUI(); showToast('Ник успешно изменён (-50 AC)'); }
+    }
+    function changeId() {
+      const i = prompt('Введите ваш ID из Standoff 2:', state.gameId);
+      if (i && i.trim()) { state.gameId = i.trim(); updateUI(); showToast('Игровой ID обновлён!'); }
+    }
+    function changeDevice() {
+      if (state.balance < 250) return showToast('Недостаточно AC (нужно 250 AC)');
+      state.balance -= 250; state.device = state.device === 'Телефон / Планшет' ? 'ПК / Эмулятор' : 'Телефон / Планшет';
+      updateUI(); showToast('Устройство изменено (-250 AC)');
+    }
+    function editBio() {
+      const t = prompt('Введите описание профиля:', document.getElementById('bioText').textContent.trim());
+      if (t && t.trim()) { document.getElementById('bioText').textContent = t.trim(); showToast('Описание профиля обновлено'); }
+    }
+    renderChart(); renderDaily(); updateUI();
+  </script>
+</body>
+</html>
