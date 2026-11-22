@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CF STANDOFFKNIFE - FACEIT</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-main: #110c0e;
+      --bg-card: #191215;
+      --bg-slot: #24191d;
+      --border-color: #2f2025;
+      --accent-red: #e52538;
+      --accent-red-glow: rgba(229, 37, 56, 0.45);
+      --accent-red-bg: rgba(229, 37, 56, 0.14);
+      --text-primary: #ffffff;
+      --text-secondary: #9b8c91;
+      --text-muted: #68595e;
+      --gold: #f5b041;
+      --green: #2ecc71;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding-bottom: 84px;
+      overflow-x: hidden;
+    }
+
+    .top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #1b1114 0%, #110c0e 100%);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo {
+      width: 34px; height: 34px; background: var(--accent-red); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 15px; color: #fff;
+    }
+    .brand-title { font-size: 13px; font-weight: 800; line-height: 1.1; }
+    .brand-sub { font-size: 10px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.8px; margin-top: 2px; }
+
+    .mode-pill {
+      display: flex; align-items: center; gap: 6px; background: var(--bg-card);
+      border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+    }
+    .mode-dot { width: 7px; height: 7px; background: var(--accent-red); border-radius: 50%; box-shadow: 0 0 6px var(--accent-red); }
+
+    .elo-badge {
+      display: flex; align-items: center; gap: 5px; background: #231814;
+      border: 1px solid #3c281e; padding: 6px 11px; border-radius: 20px;
+      font-size: 12px; font-weight: 800; color: var(--gold);
+    }
+
+    .container { padding: 0 14px; max-width: 500px; margin: 0 auto; }
+
+    .verify-banner {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: linear-gradient(90deg, rgba(245, 176, 65, 0.12), rgba(230, 126, 34, 0.16), rgba(245, 176, 65, 0.12));
+      border: 1px solid rgba(245, 176, 65, 0.35); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 14px; color: var(--gold);
+      font-size: 11.5px; font-weight: 800; cursor: pointer;
+    }
+
+    .hero-card {
+      position: relative;
+      background: radial-gradient(circle at 85% 20%, rgba(229, 37, 56, 0.25) 0%, rgba(35, 18, 23, 0.95) 65%, #181114 100%);
+      border: 1px solid rgba(229, 37, 56, 0.28); border-radius: 18px;
+      padding: 20px 16px 16px; margin-bottom: 12px; overflow: hidden;
+    }
+    .hero-watermark {
+      position: absolute; right: -12px; top: 12px; font-size: 23px; font-weight: 900;
+      line-height: 0.95; color: rgba(255, 255, 255, 0.05); transform: rotate(-10deg);
+      pointer-events: none; text-align: right; user-select: none;
+    }
+    .hero-title { font-size: 26px; font-weight: 900; margin-bottom: 4px; }
+    .hero-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
+    .hero-sub span { color: #fff; font-weight: 700; }
+
+    .queue-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .q-btn {
+      padding: 12px 10px; border-radius: 24px; font-size: 11px; font-weight: 800;
+      border: 1px solid var(--border-color); background: rgba(25, 18, 21, 0.85);
+      color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+    }
+    .q-btn.active { background: var(--accent-red); border-color: var(--accent-red); color: #fff; box-shadow: 0 4px 16px rgba(229, 37, 56, 0.4); }
+
+    .party-card {
+      background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px;
+      padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .party-left { display: flex; align-items: center; gap: 12px; }
+    .party-icon {
+      width: 38px; height: 38px; border-radius: 11px; background: rgba(52, 152, 219, 0.14);
+      border: 1px solid rgba(52, 152, 219, 0.25); display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .party-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .party-desc { font-size: 11px; color: var(--text-secondary); }
+    .party-btn { background: var(--bg-slot); border: 1px solid var(--border-color); color: #fff; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+    .lobby-card {
+      position: relative; background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 14px; margin-bottom: 12px; overflow: hidden;
+    }
+    .lobby-bg-num { position: absolute; right: 12px; bottom: -10px; font-size: 56px; font-weight: 900; color: rgba(255, 255, 255, 0.025); pointer-events: none; }
+    .lobby-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .lobby-name { font-size: 14px; font-weight: 800; }
+    .lobby-actions { display: flex; align-items: center; gap: 10px; }
+    .lobby-count { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+    .lobby-count b { color: #fff; }
+
+    .join-btn {
+      background: var(--accent-red); color: #fff; border: none; padding: 8px 16px;
+      border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .join-btn.leave { background: #2d1f24; border: 1px solid #4d323b; color: #ff8a96; }
+    .join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .lobby-empty { font-size: 12px; color: var(--text-muted); padding: 4px 0 2px; }
+    .players-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; margin-bottom: 12px; }
+    .player-slot {
+      background: var(--bg-slot); border: 1px solid var(--border-color); border-radius: 10px;
+      padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 600;
+    }
+    .player-slot.is-me { border-color: rgba(229, 37, 56, 0.55); background: rgba(229, 37, 56, 0.1); }
+    .player-nick { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px; }
+
+    .lvl-badge { width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lvl-low { border: 1.5px solid #95a5a6; color: #bdc3c7; }
+    .lvl-mid { border: 1.5px solid #f39c12; color: #f39c12; }
+    .lvl-high { border: 1.5px solid #e74c3c; color: #e74c3c; }
+
+    .lobby-footer { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--text-secondary); border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 8px; }
+    .lobby-footer b { color: #fff; }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; background: #140e10;
+      border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(5, 1fr);
+      padding: 6px 6px 10px; z-index: 60;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px 2px; border-radius: 12px; color: var(--text-secondary); font-size: 9.5px; font-weight: 700; cursor: pointer; }
+    .nav-item.active { background: var(--accent-red-bg); color: var(--accent-red); }
+    .nav-icon { font-size: 16px; line-height: 1; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .section-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .stat-box { background: var(--bg-slot); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; text-align: center; }
+    .stat-val { font-size: 16px; font-weight: 800; color: #fff; }
+    .stat-lbl { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* PREMIUM CYBERSPORT AUTH OVERLAY */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(229, 37, 56, 0.25) 0%, rgba(11, 7, 9, 0.97) 62%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 200;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .auth-overlay.open { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .auth-card {
+      position: relative;
+      background: linear-gradient(165deg, #23161a 0%, #160e11 55%, #110a0c 100%);
+      border: 1.5px solid rgba(229, 37, 56, 0.45);
+      border-radius: 24px;
+      padding: 24px 20px 22px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(229, 37, 56, 0.16);
+      overflow: hidden;
+    }
+
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 15%; right: 15%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff3b4e, transparent);
+    }
+
+    .auth-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .auth-logo-glow {
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, #ff2e43 0%, #b31222 100%);
+      border-radius: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 10px 28px var(--accent-red-glow);
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .auth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(229, 37, 56, 0.15);
+      border: 1px solid rgba(229, 37, 56, 0.35);
+      color: #ff7584;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding: 4px 11px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      margin-bottom: 5px;
+    }
+
+    .auth-sub {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .input-group { margin-bottom: 14px; }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .field-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      letter-spacing: 0.6px;
+    }
+
+    .field-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      font-size: 15px;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: #1d1317;
+      border: 1.5px solid #36232a;
+      border-radius: 13px;
+      padding: 13px 14px 13px 40px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .auth-input::placeholder { color: #5e4f54; font-weight: 500; }
+
+    .auth-input:focus {
+      border-color: var(--accent-red);
+      background: #25171c;
+      box-shadow: 0 0 0 3px rgba(229, 37, 56, 0.16);
+    }
+
+    .shield-note {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .shield-icon { font-size: 16px; flex-shrink: 0; }
+
+    .auth-error {
+      background: rgba(229, 37, 56, 0.18);
+      border: 1px solid rgba(229, 37, 56, 0.55);
+      color: #ff8a96;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px 12px;
+      border-radius: 11px;
+      margin-bottom: 14px;
+      display: none;
+      line-height: 1.35;
+    }
+
+    .auth-submit {
+      width: 100%;
+      background: linear-gradient(90deg, #e52538 0%, #c41628 100%);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      box-shadow: 0 6px 22px rgba(229, 37, 56, 0.45);
+      transition: transform 0.12s ease, opacity 0.2s;
+    }
+
+    .auth-submit:active { transform: scale(0.98); }
+    .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 150;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 18px; width: 100%; max-width: 350px; }
+    .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .modal-text { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4; }
+    .btn-secondary { background: var(--bg-slot); color: #fff; border: 1px solid var(--border-color); padding: 9px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-top">
+        <div class="auth-logo-glow">CF</div>
+        <div class="auth-badge">🛡️ ANTI-SMURF VERIFICATION</div>
+        <div class="auth-title">Вход в лигу</div>
+        <div class="auth-sub">Привяжите профиль StandoffKnife, чтобы играть рейтинговые матчи</div>
+      </div>
+
+      <div class="input-group">
+        <div class="field-header">
+          <label class="field-label">ИГРОВОЙ ID</label>
+          <span class="field-hint">Только цифры</span>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">🆔</span>
+          <input type="text" inputmode="numeric" class="auth-input" id="input-so2-id" placeholder="Например: 14829501" maxlength="15">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="field-header">
+          <label class="field-label">НИКНЕЙМ В ИГРЕ</label>
+          <span class="field-hint">Как в профиле</span>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">🎮</span>
+          <input type="text" class="auth-input" id="input-nickname" placeholder="Введите ваш никнейм" maxlength="20">
+        </div>
+      </div>
+
+      <div class="shield-note">
+        <span class="shield-icon">🔒</span>
+        <span>Один игровой ID привязывается навсегда. Повторная регистрация на занятый ID или ник запрещена.</span>
+      </div>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <button class="auth-submit" id="btn-auth-submit" onclick="registerPlayer()">ВОЙТИ В ЛИГУ</button>
+    </div>
+  </div>
+
+  <header class="top-header">
+    <div class="brand">
+      <div class="brand-logo">CF</div>
+      <div class="brand-info">
+        <div class="brand-title">CF STANDOFFKNIFE</div>
+        <div class="brand-sub">FACEIT LEAGUE</div>
+      </div>
+    </div>
+
+    <div class="mode-pill" onclick="toggleMode()">
+      <span class="mode-dot"></span>
+      <span id="mode-label">КЛАССИКА</span>
+    </div>
+
+    <div class="elo-badge">
+      <span>⚡</span>
+      <span id="user-elo">1000</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="screen-play" class="screen active">
+      <div class="verify-banner" id="verify-banner" onclick="openAuth()">
+        <span>⚠️</span>
+        <span>ЗАВЕРШИТЕ АВТОРИЗАЦИЮ ПО ID И НИКУ &gt;</span>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-watermark">PLAY TO<br>CF STANDOFF<br>KNIFE</div>
+        <div class="hero-title">ИГРАТЬ</div>
+        <div class="hero-sub">В очередях сейчас: <span id="total-in-queue">0</span></div>
+
+        <div class="queue-tabs">
+          <button class="q-btn active" id="btn-default" onclick="selectQueue('default')">DEFAULT • MOBILE</button>
+          <button class="q-btn" id="btn-qual" onclick="selectQueue('qual')">🔒 QUALIFICATION</button>
+        </div>
+      </div>
+
+      <div class="party-card">
+        <div class="party-left">
+          <div class="party-icon">👥</div>
+          <div>
+            <div class="party-title">Собери пати</div>
+            <div class="party-desc">До 2 игроков в одной команде · 3 с Premium</div>
+          </div>
+        </div>
+        <button class="party-btn" onclick="showInfo('Пати', 'Ваш код приглашения: CF-' + currentUser.tg_id.slice(-4))">Пати</button>
+      </div>
+
+      <div id="lobbies-list"></div>
+    </div>
+
+    <div id="screen-profile" class="screen">
+      <div class="section-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="brand-logo" style="width:46px;height:46px;font-size:18px;">CF</div>
+            <div>
+              <div style="font-size:16px;font-weight:800;" id="profile-nick">Гость</div>
+              <div style="font-size:12px;color:var(--text-secondary);" id="profile-so2id">ID: не привязан</div>
+            </div>
+          </div>
+          <button class="join-btn" id="profile-auth-btn" onclick="openAuth()">Войти</button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="stat-elo">1000</div>
+            <div class="stat-lbl">ELO Рейтинг</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">0</div>
+            <div class="stat-lbl">Матчей</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">1.00</div>
+            <div class="stat-lbl">K/D</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-top" class="screen">
+      <div class="section-card">
+        <div style="font-size:15px;font-weight:800;margin-bottom:8px;">🏆 Топ игроков сезона</div>
+        <div style="font-size:12.5px;color:var(--text-secondary);">Рейтинг обновится после первых завершённых матчей.</div>
+      </div>
+    </div>
+
+    <div id="screen-inv" class="screen">
+      <div class="section-card">
+        <div style="font-size:15px;font-weight:800;margin-bottom:8px;">📦 Инвентарь и награды</div>
+        <div style="font-size:12.5px;color:var(--text-secondary);">Здесь отображаются выигранные скины и промокоды.</div>
+      </div>
+    </div>
+
+    <div id="screen-more" class="screen">
+      <div class="section-card">
+        <div style="font-size:15px;font-weight:800;margin-bottom:10px;">⚙️ Правила лиги CF STANDOFFKNIFE</div>
+        <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;">
+          • Один игровой ID StandoffKnife = один аккаунт в лиге<br>
+          • Повторная регистрация запрещена<br>
+          • Запрещены читы, баги и эмуляторы
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="switchTab('profile', this)"><div class="nav-icon">👤</div><div>ПРОФИЛЬ</div></div>
+    <div class="nav-item active" onclick="switchTab('play', this)"><div class="nav-icon">▶</div><div>ИГРАТЬ</div></div>
+    <div class="nav-item" onclick="switchTab('top', this)"><div class="nav-icon">🏆</div><div>ТОП</div></div>
+    <div class="nav-item" onclick="switchTab('inv', this)"><div class="nav-icon">📦</div><div>ИНВЕНТАРЬ</div></div>
+    <div class="nav-item" onclick="switchTab('more', this)"><div class="nav-icon">⊞</div><div>ЕЩЁ</div></div>
+  </nav>
+
+  <div class="modal-overlay" id="info-modal" onclick="if(event.target===this) this.classList.remove('open')">
+    <div class="modal-box">
+      <div class="modal-title" id="info-title">Сообщение</div>
+      <div class="modal-text" id="info-text"></div>
+      <button class="btn-secondary" onclick="document.getElementById('info-modal').classList.remove('open')">Понятно</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ryfbonpfmohmmgdyllok.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_kElqIYFA9DBYN703YlhHTw_JMgOsXqi';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
+
+    const tgUser = tg?.initDataUnsafe?.user;
+    let fallbackId = localStorage.getItem('cf_device_id');
+    if (!fallbackId) {
+      fallbackId = 'dev_' + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem('cf_device_id', fallbackId);
+    }
+
+    const currentUser = {
+      tg_id: tgUser ? String(tgUser.id) : fallbackId,
+      so2_id: '',
+      nickname: '',
+      elo: 1000,
+      level: 3,
+      authorized: false
+    };
+
+    function openAuth() {
+      document.getElementById('auth-error').style.display = 'none';
+      document.getElementById('auth-overlay').classList.add('open');
+    }
+
+    function closeAuth() {
+      document.getElementById('auth-overlay').classList.remove('open');
+    }
+
+    function setAuthError(text) {
+      const box = document.getElementById('auth-error');
+      box.textContent = text;
+      box.style.display = 'block';
+    }
+
+    function applyProfile(player) {
+      currentUser.so2_id = player.so2_id;
+      currentUser.nickname = player.nickname;
+      currentUser.elo = player.elo || 1000;
+      currentUser.level = player.level || 3;
+      currentUser.authorized = true;
+
+      document.getElementById('verify-banner').style.display = 'none';
+      document.getElementById('profile-nick').textContent = player.nickname;
+      document.getElementById('profile-so2id').textContent = 'StandoffKnife ID: ' + player.so2_id;
+      document.getElementById('profile-auth-btn').style.display = 'none';
+      document.getElementById('user-elo').textContent = currentUser.elo;
+      document.getElementById('stat-elo').textContent = currentUser.elo;
+      closeAuth();
+    }
+
+    async function checkExistingUser() {
+      const { data } = await db
+        .from('players')
+        .select('*')
+        .eq('tg_id', currentUser.tg_id)
+        .maybeSingle();
+
+      if (data) {
+        applyProfile(data);
+      } else {
+        openAuth();
+      }
+    }
+
+    async function registerPlayer() {
+      const so2Id = document.getElementById('input-so2-id').value.trim();
+      const nickname = document.getElementById('input-nickname').value.trim();
+      const btn = document.getElementById('btn-auth-submit');
+
+      if (!/^\d{4,15}$/.test(so2Id)) {
+        return setAuthError('Игровой ID должен содержать только цифры (от 4 до 15 знаков).');
+      }
+      if (nickname.length < 2) {
+        return setAuthError('Введите игровой никнейм (минимум 2 символа).');
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'ПРОВЕРКА ДАННЫХ...';
+      document.getElementById('auth-error').style.display = 'none';
+
+      const { data: dupId } = await db
+        .from('players')
+        .select('tg_id')
+        .eq('so2_id', so2Id)
+        .maybeSingle();
+
+      if (dupId) {
+        btn.disabled = false;
+        btn.textContent = 'ВОЙТИ В ЛИГУ';
+        return setAuthError('Игрок с ID ' + so2Id + ' уже зарегистрирован! Повторная регистрация запрещена.');
+      }
+
+      const { data: dupNick } = await db
+        .from('players')
+        .select('tg_id')
+        .ilike('nickname', nickname)
+        .maybeSingle();
+
+      if (dupNick) {
+        btn.disabled = false;
+        btn.textContent = 'ВОЙТИ В ЛИГУ';
+        return setAuthError('Никнейм «' + nickname + '» уже занят другим игроком!');
+      }
+
+      const { data: created, error } = await db
+        .from('players')
+        .insert({
+          tg_id: currentUser.tg_id,
+          so2_id: so2Id,
+          nickname: nickname,
+          elo: 1000,
+          level: 3
+        })
+        .select()
+        .single();
+
+      btn.disabled = false;
+      btn.textContent = 'ВОЙТИ В ЛИГУ';
+
+      if (error) {
+        if (error.code === '23505') {
+          return setAuthError('Этот ID или никнейм уже зарегистрирован в системе!');
+        }
+        return setAuthError('Ошибка базы данных при регистрации.');
+      }
+
+      applyProfile(created);
+    }
+
+    let allPlayers = [];
+    let isBusy = false;
+
+    function getLevelClass(lvl) {
+      if (lvl <= 3) return 'lvl-low';
+      if (lvl <= 7) return 'lvl-mid';
+      return 'lvl-high';
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
+    }
+
+    function renderLobbies() {
+      const container = document.getElementById('lobbies-list');
+      document.getElementById('total-in-queue').textContent = allPlayers.length;
+
+      let html = '';
+      for (let lobbyNum = 1; lobbyNum <= 4; lobbyNum++) {
+        const players = allPlayers.filter(p => p.lobby_id === lobbyNum);
+        const isMeHere = players.some(p => p.tg_id === currentUser.tg_id);
+        const avgElo = players.length
+          ? Math.round(players.reduce((sum, p) => sum + (p.elo || 1000), 0) / players.length)
+          : 0;
+
+        html += `
+          <div class="lobby-card">
+            <div class="lobby-bg-num">0${lobbyNum}</div>
+            <div class="lobby-header">
+              <div class="lobby-name">ЛОББИ #${lobbyNum}</div>
+              <div class="lobby-actions">
+                <div class="lobby-count"><b>${players.length}</b>/10</div>
+                ${isMeHere
+                  ? `<button class="join-btn leave" onclick="leaveLobby()" ${isBusy ? 'disabled' : ''}>Выйти</button>`
+                  : `<button class="join-btn" onclick="joinLobby(${lobbyNum})" ${isBusy || players.length >= 10 ? 'disabled' : ''}>Войти</button>`
+                }
+              </div>
+            </div>
+        `;
+
+        if (players.length === 0) {
+          html += `<div class="lobby-empty">Пока никого — будь первым</div>`;
+        } else {
+          html += `<div class="players-grid">`;
+          players.forEach(p => {
+            const isMe = p.tg_id === currentUser.tg_id;
+            const lvl = p.level || 3;
+            html += `
+              <div class="player-slot ${isMe ? 'is-me' : ''}">
+                <span class="player-nick">${escapeHtml(p.nickname)}</span>
+                <span class="lvl-badge ${getLevelClass(lvl)}">${lvl}</span>
+              </div>
+            `;
+          });
+          html += `</div>
+            <div class="lobby-footer">
+              <span>Средний ELO: <b>${avgElo}</b></span>
+              <span>👥 0 пати</span>
+            </div>`;
+        }
+        html += `</div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    async function fetchPlayers() {
+      const { data, error } = await db.from('lobby_players').select('*').order('created_at', { ascending: true });
+      if (!error && data) {
+        allPlayers = data;
+        renderLobbies();
+      }
+    }
+
+    async function joinLobby(lobbyId) {
+      if (!currentUser.authorized) {
+        openAuth();
+        return;
+      }
+      if (isBusy) return;
+      isBusy = true;
+      renderLobbies();
+
+      await db.from('lobby_players').upsert({
+        lobby_id: lobbyId,
+        tg_id: currentUser.tg_id,
+        nickname: currentUser.nickname,
+        elo: currentUser.elo,
+        level: currentUser.level
+      }, { onConflict: 'tg_id' });
+
+      await fetchPlayers();
+      isBusy = false;
+      renderLobbies();
+    }
+
+    async function leaveLobby() {
+      if (isBusy) return;
+      isBusy = true;
+      renderLobbies();
+
+      await db.from('lobby_players').delete().eq('tg_id', currentUser.tg_id);
+      await fetchPlayers();
+      isBusy = false;
+      renderLobbies();
+    }
+
+    db.channel('lobby_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lobby_players' }, () => fetchPlayers())
+      .subscribe();
+
+    function switchTab(tab, el) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('screen-' + tab).classList.add('active');
+      el.classList.add('active');
+    }
+
+    let currentMode = 'КЛАССИКА';
+    function toggleMode() {
+      currentMode = currentMode === 'КЛАССИКА' ? 'ТУРНИРНЫЙ' : 'КЛАССИКА';
+      document.getElementById('mode-label').textContent = currentMode;
+    }
+
+    function selectQueue(type) {
+      if (type === 'qual') {
+        showInfo('Qualification', 'Закрытый режим доступен игрокам от 2000 ELO.');
+      }
+    }
+
+    function showInfo(title, text) {
+      document.getElementById('info-title').textContent = title;
+      document.getElementById('info-text').textContent = text;
+      document.getElementById('info-modal').classList.add('open');
+    }
+
+    renderLobbies();
+    fetchPlayers();
+    checkExistingUser();
+  </script>
+</body>
+</html>
