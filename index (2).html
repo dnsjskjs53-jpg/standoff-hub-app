@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CF STANDOFFKNIFE — FACEIT</title>
+<style>
+  :root {
+    --bg-main: #110c0e;
+    --bg-card: #191215;
+    --bg-card-inner: #22171b;
+    --bg-slot: #24191d;
+    --border-color: #2f2025;
+    --accent-red: #e52538;
+    --accent-red-dark: #9c1724;
+    --accent-red-bg: rgba(229, 37, 56, 0.14);
+    --text-primary: #ffffff;
+    --text-secondary: #9b8c91;
+    --text-muted: #68595e;
+    --gold: #f5b041;
+    --orange: #e67e22;
+    --green: #2ecc71;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding-bottom: 84px;
+    overflow-x: hidden;
+  }
+
+  /* Top Header */
+  .top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #1b1114 0%, #110c0e 100%);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, #f22e42 0%, #b81424 100%);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: -0.5px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(229, 37, 56, 0.35);
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  .brand-title {
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    color: #fff;
+  }
+
+  .brand-sub {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+  }
+
+  .mode-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+  }
+
+  .mode-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    box-shadow: 0 0 8px var(--accent-red);
+  }
+
+  .elo-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #23181c;
+    border: 1px solid #38252b;
+    padding: 6px 11px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .elo-bolt {
+    color: var(--gold);
+    font-size: 13px;
+  }
+
+  .container {
+    padding: 0 14px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* Verify Hours Banner */
+  .verify-banner {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(245, 176, 65, 0.14) 0%, rgba(230, 126, 34, 0.18) 100%);
+    border: 1px solid rgba(245, 176, 65, 0.35);
+    color: #f8c471;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.15s;
+  }
+
+  .verify-banner:active {
+    transform: scale(0.98);
+  }
+
+  .verify-banner.verified {
+    background: rgba(46, 204, 113, 0.14);
+    border-color: rgba(46, 204, 113, 0.35);
+    color: #58d68d;
+  }
+
+  /* Play Hero Card */
+  .hero-card {
+    position: relative;
+    background: radial-gradient(circle at top right, #4a121b 0%, #231015 55%, #191114 100%);
+    border: 1px solid #3a1d24;
+    border-radius: 16px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .hero-watermark {
+    position: absolute;
+    right: -6px;
+    top: 8px;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 0.95;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.06);
+    transform: rotate(-10deg);
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-title {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  .hero-sub strong {
+    color: #fff;
+  }
+
+  .queue-toggles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .queue-btn {
+    padding: 11px 10px;
+    border-radius: 22px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .queue-btn.active {
+    background: linear-gradient(90deg, #e52538 0%, #c91c2d 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(229, 37, 56, 0.35);
+  }
+
+  .queue-btn.locked {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+  }
+
+  /* Party Card */
+  .party-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .party-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .party-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #1b2838;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .party-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .party-info p {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .btn-secondary {
+    background: #281d21;
+    border: 1px solid #3a2a30;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-secondary:active {
+    background: #35262c;
+  }
+
+  /* Lobby Cards */
+  .lobby-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .lobby-watermark {
+    position: absolute;
+    right: 12px;
+    bottom: -8px;
+    font-size: 56px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .lobby-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .lobby-title {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+  }
+
+  .lobby-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lobby-count {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-secondary);
+  }
+
+  .btn-join {
+    background: var(--accent-red);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-join.joined {
+    background: #2f2025;
+    color: #ff6b7a;
+    border: 1px solid #522931;
+  }
+
+  .players-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .player-slot {
+    background: var(--bg-slot);
+    border: 1px solid #2e2025;
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .player-slot.me {
+    border-color: var(--accent-red);
+    background: rgba(229, 37, 56, 0.1);
+  }
+
+  .player-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 105px;
+  }
+
+  .lvl-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    border: 1.5px solid;
+    flex-shrink: 0;
+  }
+
+  .lvl-1 { border-color: #95a5a6; color: #bdc3c7; }
+  .lvl-6 { border-color: #f39c12; color: #f39c12; }
+  .lvl-7 { border-color: #e67e22; color: #e67e22; }
+  .lvl-8 { border-color: #d35400; color: #e67e22; }
+  .lvl-10 { border-color: #e52538; color: #ff4d5e; box-shadow: 0 0 8px rgba(229,37,56,0.3); }
+  .lvl-lock { border-color: #f5b041; color: #f5b041; font-size: 10px; }
+
+  .lobby-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .lobby-footer strong {
+    color: #fff;
+  }
+
+  .empty-lobby-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 4px 0;
+  }
+
+  /* Views (Tabs) */
+  .view-section {
+    display: none;
+  }
+
+  .view-section.active {
+    display: block;
+    animation: fadeIn 0.18s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Profile, Top, Inventory, More Cards */
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .avatar-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #e52538, #6e101a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-box {
+    background: var(--bg-slot);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 17px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 12px;
+    background: var(--bg-slot);
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    margin-bottom: 8px;
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #140e10;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 6px 10px;
+    z-index: 60;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+
+  .nav-item.active {
+    background: rgba(229, 37, 56, 0.16);
+    color: #fff;
+  }
+
+  .nav-icon {
+    font-size: 17px;
+  }
+
+  /* Modal / Toast */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal-sheet {
+    background: #1b1316;
+    border-top: 1px solid #3c262d;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 16px 28px;
+  }
+
+  .input-field {
+    width: 100%;
+    background: #261b1f;
+    border: 1px solid #3d2a31;
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 11px;
+    font-size: 14px;
+    margin: 12px 0;
+    outline: none;
+  }
+
+  .btn-primary-full {
+    width: 100%;
+    background: var(--accent-red);
+    color: #fff;
+    border: none;
+    padding: 13px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .toast {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2b1d22;
+    border: 1px solid var(--accent-red);
+    color: #fff;
+    padding: 9px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 120;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast">Уведомление</div>
+
+<!-- Header -->
+<header class="top-header">
+  <div class="brand">
+    <div class="brand-logo">CF</div>
+    <div class="brand-text">
+      <span class="brand-title">CF STANDOFFKNIFE</span>
+      <span class="brand-sub">FACEIT LEAGUE</span>
+    </div>
+  </div>
+
+  <div class="mode-pill" onclick="toggleMode()">
+    <span class="mode-dot"></span>
+    <span id="current-mode">КЛАССИКА</span>
+  </div>
+
+  <div class="elo-badge">
+    <span class="elo-bolt">⚡</span>
+    <span id="user-elo">2095</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TAB 1: PLAY -->
+  <section id="tab-play" class="view-section active">
+    <div id="verify-banner" class="verify-banner" onclick="openVerifyModal()">
+      <span>⚠️ ПОДТВЕРДИ ЧАСЫ В ИГРЕ &gt;</span>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-watermark">PLAY TO<br>CF STANDOFF<br>KNIFE</div>
+      <div class="hero-title">ИГРАТЬ</div>
+      <div class="hero-sub">В очередях сейчас: <strong id="queue-count">7</strong></div>
+
+      <div class="queue-toggles">
+        <button id="btn-mode-default" class="queue-btn active" onclick="selectQueue('default')">
+          DEFAULT • MOBILE
+        </button>
+        <button id="btn-mode-qual" class="queue-btn locked" onclick="selectQueue('qual')">
+          🔒 QUALIFICATION
+        </button>
+      </div>
+    </div>
+
+    <div class="party-card">
+      <div class="party-left">
+        <div class="party-icon">👥</div>
+        <div class="party-info">
+          <h4 id="party-title">Собери пати</h4>
+          <p id="party-desc">До 2 игроков в одной команде · 3 с Premium</p>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="openPartyModal()">Пати</button>
+    </div>
+
+    <div id="lobbies-container"></div>
+  </section>
+
+  <!-- TAB 2: PROFILE -->
+  <section id="tab-profile" class="view-section">
+    <div class="section-card">
+      <div class="profile-header">
+        <div class="avatar-box" id="profile-avatar">CF</div>
+        <div>
+          <h3 id="profile-name" style="font-size:18px;font-weight:800;">Player_CF</h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;">ID SO2: <strong id="profile-so2-id" style="color:#fff;">Не привязан</strong></p>
+          <span style="display:inline-block;margin-top:6px;background:var(--accent-red-bg);color:#ff5c6c;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;">LVL 10 · 2095 ELO</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val">148</div>
+          <div class="stat-lbl">Матчей</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" style="color:var(--green);">61%</div>
+          <div class="stat-lbl">Винрейт</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">1.24</div>
+          <div class="stat-lbl">K/D</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h4 style="font-size:14px;margin-bottom:10px;">Последние матчи CF STANDOFFKNIFE</h4>
+      <div class="list-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">Sandstone · 5v5</div>
+          <div style="font-size:11px;color:var(--text-secondary);">Сегодня, 13:40</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="color:var(--green);font-weight:800;font-size:13px;">ПОБЕДА 13:9</div>
+          <div style="font-size:11px;color:var(--green);">+25 ELO</div>
+        </div>
+      </div>
+      <div class="list-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">Province · 5v5</div>
+          <div style="font-size:11px;color:var(--text-secondary);">Вчера, 21:15</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="color:#ff5c6c;font-weight:800;font-size:13px;">ПОРАЖЕНИЕ 10:13</div>
+          <div style="font-size:11px;color:#ff5c6c;">-22 ELO</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: TOP -->
+  <section id="tab-top" class="view-section">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:900;margin-bottom:4px;">ТОП ИГРОКОВ СЕЗОНА</h3>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Лига CF STANDOFFKNIFE · Призовой фонд</p>
+
+      <div class="list-row">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:900;color:var(--gold);width:18px;">#1</span>
+          <span style="font-weight:700;font-size:13px;">s9me</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:800;">⚡ 2410</span>
+          <span class="lvl-badge lvl-10">10</span>
+        </div>
+      </div>
+
+      <div class="list-row">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:900;color:#bdc3c7;width:18px;">#2</span>
+          <span style="font-weight:700;font-size:13px;">coldssiemens</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:800;">⚡ 2180</span>
+          <span class="lvl-badge lvl-8">8</span>
+        </div>
+      </div>
+
+      <div class="list-row" style="border-color:var(--accent-red);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:900;color:#cd7f32;width:18px;">#3</span>
+          <span style="font-weight:700;font-size:13px;" id="top-me-name">Вы (Player_CF)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:800;">⚡ 2095</span>
+          <span class="lvl-badge lvl-10">10</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: INVENTORY -->
+  <section id="tab-inv" class="view-section">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:900;margin-bottom:4px;">ИНВЕНТАРЬ И ПРИЗЫ</h3>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Награды за матчи и турниры CF STANDOFFKNIFE</p>
+
+      <div class="list-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">👑 CF Premium (7 дней)</div>
+          <div style="font-size:11px;color:var(--text-secondary);">Пати до 3 игроков + приоритет капитана</div>
+        </div>
+        <button class="btn-join" onclick="showToast('Premium активирован!')">Активировать</button>
+      </div>
+
+      <div class="list-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">🗡️ Промокод на 100 Gold</div>
+          <div style="font-size:11px;color:var(--text-secondary);">Награда за серию из 5 побед</div>
+        </div>
+        <button class="btn-secondary" onclick="showToast('Заявка на вывод отправлена админу')">Вывести</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: MORE -->
+  <section id="tab-more" class="view-section">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:900;margin-bottom:12px;">CF STANDOFFKNIFE · ИНФО</h3>
+      <div class="list-row" onclick="showToast('Правила лиги: честная игра без софта, запись экрана обязательна')" style="cursor:pointer;">
+        <span style="font-size:13px;font-weight:700;">📜 Правила лиги и регламент</span>
+        <span>&gt;</span>
+      </div>
+      <div class="list-row" onclick="showToast('Канал проекта: @cfstandoffkknife')" style="cursor:pointer;">
+        <span style="font-size:13px;font-weight:700;">📢 Официальный Telegram-канал</span>
+        <span>&gt;</span>
+      </div>
+      <div class="list-row" onclick="showToast('Тикет в поддержку создан')" style="cursor:pointer;">
+        <span style="font-size:13px;font-weight:700;">🛡️ Вызвать модератора / Репорт</span>
+        <span>&gt;</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <button class="nav-item" onclick="switchTab('profile', this)">
+    <span class="nav-icon">👤</span>
+    <span>ПРОФИЛЬ</span>
+  </button>
+  <button class="nav-item active" onclick="switchTab('play', this)">
+    <span class="nav-icon">▶</span>
+    <span>ИГРАТЬ</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('top', this)">
+    <span class="nav-icon">🏆</span>
+    <span>ТОП</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('inv', this)">
+    <span class="nav-icon">📦</span>
+    <span>ИНВЕНТАРЬ</span>
+  </button>
+  <button class="nav-item" onclick="switchTab('more', this)">
+    <span class="nav-icon">⊞</span>
+    <span>ЕЩЁ</span>
+  </button>
+</nav>
+
+<!-- Verify Hours Modal -->
+<div id="verify-modal" class="modal-overlay" onclick="closeModals(event)">
+  <div class="modal-sheet">
+    <h3 style="font-size:17px;font-weight:900;">Подтверждение аккаунта Standoff 2</h3>
+    <p style="font-size:12px;color:var(--text-secondary);margin-top:6px;">
+      Укажите ваш игровой ID в Standoff 2 для проверки часов и допуска к рейтинговым лобби CF STANDOFFKNIFE.
+    </p>
+    <input id="so2-id-input" class="input-field" type="number" placeholder="Введите ваш ID (например: 148293012)">
+    <button class="btn-primary-full" onclick="confirmVerify()">Отправить на проверку</button>
+  </div>
+</div>
+
+<!-- Party Modal -->
+<div id="party-modal" class="modal-overlay" onclick="closeModals(event)">
+  <div class="modal-sheet">
+    <h3 style="font-size:17px;font-weight:900;">Пати CF STANDOFFKNIFE</h3>
+    <p style="font-size:12px;color:var(--text-secondary);margin-top:6px;">
+      Отправьте код приглашения другу, чтобы заходить в лобби одной командой.
+    </p>
+    <div style="background:#261b1f;border:1px dashed #e52538;padding:12px;border-radius:10px;text-align:center;font-weight:900;letter-spacing:2px;margin:12px 0;">
+      CF-PARTY-7492
+    </div>
+    <button class="btn-primary-full" onclick="copyPartyCode()">Скопировать код пати</button>
+  </div>
+</div>
+
+<script>
+  // Telegram WebApp SDK safe init
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  let currentUser = {
+    name: "Player_CF",
+    elo: 2095,
+    lvl: 10
+  };
+
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      const u = tg.initDataUnsafe.user;
+      currentUser.name = u.username || u.first_name || "Player_CF";
+      document.getElementById("profile-name").textContent = currentUser.name;
+      document.getElementById("top-me-name").textContent = "Вы (" + currentUser.name + ")";
+      document.getElementById("profile-avatar").textContent = currentUser.name.slice(0, 2).toUpperCase();
+    }
+  }
+
+  // Lobbies State
+  const lobbies = [
+    {
+      id: 1,
+      avgElo: 1352,
+      parties: 1,
+      players: [
+        { name: "ShaLun", lvl: 1 },
+        { name: "kivviol666", lvl: "lock" },
+        { name: "kiyoshi", lvl: 7 },
+        { name: "coldssiemens", lvl: 8 },
+        { name: "s9me", lvl: 10 },
+        { name: "Asfaria", lvl: 6 },
+        { name: "kl4mech", lvl: "lock" }
+      ]
+    },
+    { id: 2, avgElo: 0, parties: 0, players: [] },
+    { id: 3, avgElo: 0, parties: 0, players: [] },
+    { id: 4, avgElo: 0, parties: 0, players: [] }
+  ];
+
+  let joinedLobbyId = null;
+
+  function renderLobbies() {
+    const container = document.getElementById("lobbies-container");
+    let totalPlayers = 0;
+
+    container.innerHTML = lobbies.map(lobby => {
+      totalPlayers += lobby.players.length;
+      const isJoined = joinedLobbyId === lobby.id;
+      const numStr = lobby.id < 10 ? "0" + lobby.id : lobby.id;
+
+      let bodyHtml = "";
+      if (lobby.players.length === 0) {
+        bodyHtml = `<div class="empty-lobby-text">Пока никого — будь первым</div>`;
+      } else {
+        const slotsHtml = lobby.players.map(p => {
+          const badge = p.lvl === "lock"
+            ? `<span class="lvl-badge lvl-lock">🔒</span>`
+            : `<span class="lvl-badge lvl-${p.lvl}">${p.lvl}</span>`;
+          return `
+            <div class="player-slot ${p.isMe ? 'me' : ''}">
+              <span class="player-name">${p.name}</span>
+              ${badge}
+            </div>
+          `;
+        }).join("");
+
+        bodyHtml = `
+          <div class="players-grid">${slotsHtml}</div>
+          <div class="lobby-footer">
+            <span>Средний ELO: <strong>${lobby.avgElo || currentUser.elo}</strong></span>
+            <span>👥 ${lobby.parties} пати</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="lobby-card">
+          <div class="lobby-watermark">${numStr}</div>
+          <div class="lobby-header">
+            <span class="lobby-title">ЛОББИ #${lobby.id}</span>
+            <div class="lobby-actions">
+              <span class="lobby-count">${lobby.players.length}/10</span>
+              <button class="btn-join ${isJoined ? 'joined' : ''}" onclick="toggleLobby(${lobby.id})">
+                ${isJoined ? 'Выйти' : 'Войти'}
+              </button>
+            </div>
+          </div>
+          ${bodyHtml}
+        </div>
+      `;
+    }).join("");
+
+    document.getElementById("queue-count").textContent = totalPlayers;
+  }
+
+  function toggleLobby(id) {
+    // Remove user from any previous lobby
+    lobbies.forEach(l => {
+      l.players = l.players.filter(p => !p.isMe);
+    });
+
+    if (joinedLobbyId === id) {
+      joinedLobbyId = null;
+      showToast("Вы вышли из лобби #" + id);
+    } else {
+      const target = lobbies.find(l => l.id === id);
+      if (target && target.players.length < 10) {
+        target.players.push({ name: currentUser.name, lvl: currentUser.lvl, isMe: true });
+        joinedLobbyId = id;
+        showToast("Вы вошли в ЛОББИ #" + id);
+      }
+    }
+    renderLobbies();
+  }
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll(".view-section").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+    document.getElementById("tab-" + tabId).classList.add("active");
+    btn.classList.add("active");
+  }
+
+  function toggleMode() {
+    const el = document.getElementById("current-mode");
+    el.textContent = el.textContent === "КЛАССИКА" ? "СОРЕВНОВАТЕЛЬНЫЙ" : "КЛАССИКА";
+    showToast("Режим: " + el.textContent);
+  }
+
+  function selectQueue(type) {
+    if (type === "qual") {
+      showToast("Квалификация доступна после подтверждения часов");
+      return;
+    }
+    showToast("Выбрана очередь DEFAULT • MOBILE");
+  }
+
+  function openVerifyModal() {
+    document.getElementById("verify-modal").classList.add("open");
+  }
+
+  function openPartyModal() {
+    document.getElementById("party-modal").classList.add("open");
+  }
+
+  function closeModals(e) {
+    if (e.target.classList.contains("modal-overlay")) {
+      e.target.classList.remove("open");
+    }
+  }
+
+  function confirmVerify() {
+    const val = document.getElementById("so2-id-input").value.trim();
+    if (!val || val.length < 5) {
+      showToast("Введите корректный ID Standoff 2");
+      return;
+    }
+    document.getElementById("verify-modal").classList.remove("open");
+    const banner = document.getElementById("verify-banner");
+    banner.classList.add("verified");
+    banner.innerHTML = `<span>✅ АККАУНТ ID ${val} ПОДТВЕРЖДЁН</span>`;
+    document.getElementById("profile-so2-id").textContent = val;
+    showToast("ID привязан! Доступ открыт");
+  }
+
+  function copyPartyCode() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText("CF-PARTY-7492").catch(() => {});
+    }
+    document.getElementById("party-modal").classList.remove("open");
+    showToast("Код пати CF-PARTY-7492 скопирован");
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+
+  renderLobbies();
+</script>
+</body>
+</html>
