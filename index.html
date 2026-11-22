@@ -1,1389 +1,172 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CF STANDOFFKNIFE - FACEIT</title>
-  <style>
-    :root {
-      --bg-main: #0e0e10;
-      --bg-card: #18181b;
-      --bg-card-hover: #202024;
-      --bg-input: #121214;
-      --border: #2a2a30;
-      --accent: #e52538;
-      --accent-hover: #ff3347;
-      --accent-soft: rgba(229, 37, 56, 0.14);
-      --gold-1: #ffd700;
-      --gold-2: #f59e0b;
-      --gold-3: #b45309;
-      --text-main: #ffffff;
-      --text-muted: #9ca3af;
-      --green: #22c55e;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
-      padding-bottom: 84px;
-    }
-
-    /* Шапка */
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(14, 14, 16, 0.94);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #ff3347, #b91c1c);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 14px rgba(229, 37, 56, 0.35);
-    }
-
-    .brand-info h1 {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-    }
-
-    .brand-info span {
-      font-size: 10px;
-      color: var(--text-muted);
-      display: block;
-      letter-spacing: 0.8px;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Переключатель 5x5 / 1x1 */
-    .mode-switcher {
-      display: flex;
-      background: #18181b;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 3px;
-    }
-
-    .mode-btn {
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 5px 10px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .mode-btn.active {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 2px 10px rgba(229, 37, 56, 0.4);
-    }
-
-    .mode-btn.active.duel-mode {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #111;
-      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
-    }
-
-    .elo-pill {
-      background: #1f1a10;
-      border: 1px solid rgba(255, 215, 0, 0.35);
-      color: var(--gold-1);
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .container {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 14px;
-    }
-
-    .auth-banner {
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: #fbbf24;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* Баннер ИГРАТЬ */
-    .hero-card {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, #2a0d12 0%, #17171b 70%);
-      border: 1px solid rgba(229, 37, 56, 0.35);
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 14px;
-    }
-
-    .hero-card.duel-theme {
-      background: linear-gradient(135deg, #2b1e08 0%, #17171b 75%);
-      border-color: rgba(255, 215, 0, 0.4);
-    }
-
-    .hero-watermark {
-      position: absolute;
-      right: -10px;
-      top: 6px;
-      font-size: 28px;
-      font-weight: 900;
-      color: rgba(255, 255, 255, 0.04);
-      text-align: right;
-      line-height: 1.05;
-      pointer-events: none;
-    }
-
-    .hero-title {
-      font-size: 24px;
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-
-    .hero-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-    }
-
-    .hero-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .hero-tab {
-      padding: 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .hero-tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .hero-card.duel-theme .hero-tab.active {
-      background: linear-gradient(135deg, #ffd700, #f59e0b);
-      border-color: #ffd700;
-      color: #111;
-    }
-
-    /* Карточки действий */
-    .action-row {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .action-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .action-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: #232329;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .action-title {
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-pill {
-      background: var(--accent-soft);
-      color: #ff5c6c;
-      font-size: 11px;
-      padding: 2px 7px;
-      border-radius: 999px;
-      font-weight: 800;
-    }
-
-    .action-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .btn-secondary {
-      background: #25252b;
-      border: 1px solid #34343d;
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* Лобби */
-    .lobby-card {
-      position: relative;
-      overflow: hidden;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 10px;
-      transition: 0.2s;
-    }
-
-    .lobby-card.joined {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(229, 37, 56, 0.3);
-    }
-
-    .lobby-card.duel-lobby.joined {
-      border-color: var(--gold-1);
-      box-shadow: 0 0 14px rgba(255, 215, 0, 0.18);
-    }
-
-    .lobby-num-bg {
-      position: absolute;
-      right: 12px;
-      bottom: -8px;
-      font-size: 46px;
-      font-weight: 900;
-      color: rgba(255, 255, 255, 0.03);
-      pointer-events: none;
-    }
-
-    .lobby-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .lobby-name {
-      font-size: 14px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .duel-tag {
-      background: rgba(255, 215, 0, 0.16);
-      color: var(--gold-1);
-      border: 1px solid rgba(255, 215, 0, 0.35);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 6px;
-    }
-
-    .lobby-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .lobby-count {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--text-muted);
-    }
-
-    .btn-join {
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      padding: 7px 14px;
-      border-radius: 9px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .btn-join.leave {
-      background: #2c2c34;
-      color: #e5e7eb;
-    }
-
-    .btn-join.gold {
-      background: linear-gradient(135deg, #ffd700, #f59e0b);
-      color: #111;
-    }
-
-    .players-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .player-chip {
-      background: #121215;
-      border: 1px solid #26262c;
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .lvl-badge {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 1.5px solid #9ca3af;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .lobby-empty {
-      font-size: 12px;
-      color: var(--text-muted);
-      padding: 6px 0 10px;
-    }
-
-    .lobby-meta {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    /* Нижняя навигация */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #121215;
-      border-top: 1px solid var(--border);
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      padding: 8px 4px 10px;
-      z-index: 40;
-    }
-
-    .nav-item {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav-item.active {
-      color: #ff4d5e;
-      background: rgba(229, 37, 56, 0.12);
-      border-radius: 10px;
-      padding: 4px 0;
-    }
-
-    /* Модальные окна */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.82);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 14px;
-      z-index: 100;
-    }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
-    .modal-box {
-      width: 100%;
-      max-width: 440px;
-      max-height: 90vh;
-      overflow-y: auto;
-      background: #16161a;
-      border: 1px solid #2e2e36;
-      border-radius: 18px;
-      padding: 18px;
-      position: relative;
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 900;
-    }
-
-    .modal-close {
-      background: #25252c;
-      border: none;
-      color: #fff;
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .input-field {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      color: #fff;
-      padding: 11px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      margin-bottom: 10px;
-      outline: none;
-    }
-
-    .input-field:focus {
-      border-color: var(--accent);
-    }
-
-    .btn-primary {
-      width: 100%;
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      padding: 12px;
-      border-radius: 11px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    /* Этапы матча 1x1 и 5x5 */
-    .step-indicator {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-
-    .step-dot {
-      flex: 1;
-      height: 4px;
-      border-radius: 999px;
-      background: #2b2b33;
-    }
-
-    .step-dot.done {
-      background: var(--green);
-    }
-
-    .step-dot.active {
-      background: var(--gold-1);
-    }
-
-    .maps-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .map-card {
-      background: #1f1f25;
-      border: 1px solid #32323c;
-      border-radius: 12px;
-      padding: 12px 10px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.2s;
-      position: relative;
-    }
-
-    .map-card.banned {
-      opacity: 0.35;
-      text-decoration: line-through;
-      border-color: #ef4444;
-      background: #191214;
-      pointer-events: none;
-    }
-
-    .map-card.winner {
-      border-color: var(--green);
-      background: rgba(34, 197, 94, 0.14);
-      color: #86efac;
-    }
-
-    /* Выбор раундов 10 / 13 / 16 */
-    .rounds-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 12px 0 16px;
-    }
-
-    .round-option {
-      background: #1d1d23;
-      border: 1.5px solid #33333d;
-      border-radius: 12px;
-      padding: 14px 8px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .round-option:hover,
-    .round-option.selected {
-      border-color: var(--gold-1);
-      background: rgba(255, 215, 0, 0.12);
-    }
-
-    .round-num {
-      font-size: 20px;
-      font-weight: 900;
-      color: #fff;
-    }
-
-    .round-option.selected .round-num {
-      color: var(--gold-1);
-    }
-
-    .round-sub {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* ЗОЛОТАЯ ПЛАШКА КАПИТАНА */
-    .gold-captain-card {
-      position: relative;
-      background: linear-gradient(145deg, #2a1f05 0%, #1a1508 55%, #2b1d04 100%);
-      border: 1.5px solid #ffd700;
-      border-radius: 16px;
-      padding: 16px;
-      margin: 12px 0;
-      box-shadow: 0 0 24px rgba(255, 215, 0, 0.24), inset 0 0 18px rgba(255, 215, 0, 0.08);
-    }
-
-    .gold-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: linear-gradient(135deg, #ffd700, #f59e0b);
-      color: #141005;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 4px 10px;
-      border-radius: 999px;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-    }
-
-    .captain-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .captain-nick {
-      font-size: 18px;
-      font-weight: 900;
-      color: #fff8dc;
-    }
-
-    .captain-id-box {
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(255, 215, 0, 0.45);
-      border-radius: 10px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .captain-id-label {
-      font-size: 11px;
-      color: #eab308;
-      font-weight: 700;
-    }
-
-    .captain-id-value {
-      font-size: 15px;
-      font-weight: 900;
-      color: #ffd700;
-      letter-spacing: 0.6px;
-      font-family: monospace;
-    }
-
-    .btn-gold-copy {
-      width: 100%;
-      margin-top: 10px;
-      background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%);
-      color: #141005;
-      border: none;
-      border-radius: 11px;
-      padding: 12px;
-      font-size: 13px;
-      font-weight: 900;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
-      transition: transform 0.15s;
-    }
-
-    .btn-gold-copy:active {
-      transform: scale(0.98);
-    }
-
-    .summary-strip {
-      display: flex;
-      justify-content: space-between;
-      background: #111114;
-      border: 1px solid #2a2a32;
-      border-radius: 10px;
-      padding: 9px 12px;
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-
-    .page-section {
-      display: none;
-    }
-
-    .page-section.active {
-      display: block;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .stat-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 8px;
-      text-align: center;
-    }
-
-    .stat-val {
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .stat-lbl {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>CF STANDOFFKNIFE - FACEIT</title>
+<script src="https://telegram.org" defer></script>
+<script src="https://jsdelivr.net" defer></script>
+<style>
+:root{--bg:#0e0a0c;--card:#181215;--slot:#22181c;--brd:#2f2127;--red:#e52538;--txt:#fff;--sub:#96888d;--gold:#f5b041;--grn:#2ecc71;--ct:#3498db;--t:#e67e22}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:80px;overflow-x:hidden}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:#140e11;position:sticky;top:0;z-index:40;border-bottom:1px solid #22171b}
+.logo{width:34px;height:34px;background:var(--red);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px}
+.pill{background:var(--card);border:1px solid var(--brd);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;background:var(--red);border-radius:50%;box-shadow:0 0 6px var(--red)}
+.elo{background:#231814;border:1px solid #3c281e;padding:6px 11px;border-radius:20px;font-size:12px;font-weight:800;color:var(--gold)}
+.wrap{padding:0 14px;max-width:480px;margin:0 auto}
+.warn{background:rgba(245,176,65,.14);border:1px solid rgba(245,176,65,.38);color:var(--gold);padding:10px;border-radius:12px;font-size:11.5px;font-weight:800;text-align:center;margin:10px 0;cursor:pointer}
+.hero{background:radial-gradient(circle at 85% 20%,rgba(229,37,56,.25),#181114 70%);border:1px solid rgba(229,37,56,.3);border-radius:18px;padding:18px 15px;margin:10px 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.qbtn{padding:11px;border-radius:22px;border:1px solid var(--brd);background:var(--card);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer}
+.qbtn.act{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 4px 14px rgba(229,37,56,.35)}
+.bar{background:var(--card);border:1px solid var(--brd);border-radius:15px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.abtn{background:var(--slot);border:1px solid var(--brd);color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}
+.lcard{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:14px;margin-bottom:11px}
+.lhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.jbtn{background:var(--red);color:#fff;border:none;padding:8px 15px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer}
+.jbtn.lv{background:#2d1f24;border:1px solid #4d323b;color:#ff8a96}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.pslot{background:var(--slot);border:1px solid var(--brd);padding:8px 10px;border-radius:10px;font-size:12.5px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#130d10;border-top:1px solid var(--brd);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 4px 10px;z-index:50}
+.nitem{text-align:center;color:var(--sub);font-size:10px;font-weight:700;cursor:pointer}
+.nitem.act{color:var(--red)}
+.scr{display:none}.scr.act{display:block}
+.ovl{position:fixed;inset:0;background:rgba(10,7,8,.96);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:14px;z-index:200;overflow-y:auto}
+.ovl.open{display:flex}
+.box{background:#191215;border:1.5px solid rgba(229,37,56,.4);border-radius:22px;padding:20px 16px;width:100%;max-width:420px;margin:auto}
+.inp{width:100%;background:var(--slot);border:1.5px solid #35242a;border-radius:12px;padding:12px;color:#fff;font-size:14px;margin-bottom:10px;outline:none}
+.err{color:#ff7b88;font-size:12px;margin-bottom:10px;display:none}
+.ring{width:76px;height:76px;border-radius:50%;border:5px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;margin:0 auto 12px;box-shadow:0 0 20px rgba(229,37,56,.4)}
+.cap-tag{display:inline-block;background:rgba(245,176,65,.18);border:1px solid var(--gold);color:var(--gold);font-size:10px;font-weight:900;padding:3px 10px;border-radius:8px;margin-top:6px}
+.rdy-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:16px 0 8px}
+.rdy-dot{width:34px;height:34px;border-radius:50%;border:2px dashed #4a3a40;display:flex;align-items:center;justify-content:center;font-size:13px;color:#66555b}
+.rdy-dot.ok{border:2px solid var(--grn);background:rgba(46,204,113,.15);color:var(--grn);font-weight:900}
+.turn-bar{background:rgba(229,37,56,.14);border:1px solid rgba(229,37,56,.45);border-radius:14px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tmr-pill{background:#2d161c;border:1px solid var(--red);color:#ff8a96;font-weight:900;font-size:13px;padding:4px 10px;border-radius:10px}
+.v-row{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:9px 11px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.v-row.banned{opacity:.48;background:#130e10}
+.v-thumb{width:46px;height:46px;border-radius:10px;overflow:hidden;position:relative;flex-shrink:0;border:1px solid rgba(255,255,255,.12)}
+.v-thumb svg{width:100%;height:100%;display:block}
+.v-x{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:26px;font-weight:900}
+.v-ban-btn{background:rgba(229,37,56,.16);border:1px solid rgba(229,37,56,.5);color:#ff7b88;padding:6px 13px;border-radius:16px;font-size:11px;font-weight:800;cursor:pointer}
+.v-ban-btn:disabled{opacity:.35;cursor:not-allowed}
+.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.v-btn{background:var(--slot);border:1.5px solid var(--brd);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer}
+.v-btn.act{border-color:var(--red);background:rgba(229,37,56,.18)}
+.m-banner{border-radius:16px;padding:14px;border:1px solid var(--brd);margin-bottom:10px;position:relative;overflow:hidden}
+.host-box{background:rgba(16,12,14,.92);border:1.5px solid var(--gold);border-radius:14px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.t-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.t-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:10px}
+.chat-box{background:var(--card);border:1px solid var(--brd);border-radius:15px;padding:12px;margin-top:10px}
+.chat-msgs{height:125px;overflow-y:auto;font-size:12px;display:flex;flex-direction:column;gap:6px;margin:8px 0;padding-right:4px}
+.c-msg{background:var(--slot);padding:6px 9px;border-radius:9px}
+</style>
 </head>
 <body>
-
-  <!-- ШАПКА -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-logo">CF</div>
-      <div class="brand-info">
-        <h1>CF STANDOFFKNIFE</h1>
-        <span>FACEIT LEAGUE</span>
-      </div>
-    </div>
-
-    <div class="header-right">
-      <div class="mode-switcher">
-        <button class="mode-btn active" id="btnMode5v5" onclick="switchMode('5v5')">5x5</button>
-        <button class="mode-btn" id="btnMode1v1" onclick="switchMode('1v1')">⚔️ 1x1</button>
-      </div>
-      <div class="elo-pill" id="headerElo">⚡ 1000</div>
-    </div>
-  </header>
-
-  <main class="container">
-
-    <!-- Плашка авторизации -->
-    <div class="auth-banner" id="authBanner" onclick="openModal('authModal')">
-      <span>⚠ ЗАВЕРШИТЕ АВТОРИЗАЦИЮ ПО ID И НИКУ</span>
-      <span>›</span>
-    </div>
-
-    <!-- ВКЛАДКА: ИГРАТЬ -->
-    <section id="tab-play" class="page-section active">
-      <div class="hero-card" id="heroCard">
-        <div class="hero-watermark">PLAY TO<br>CF STANDOFF<br>KNIFE</div>
-        <div class="hero-title" id="heroTitle">ИГРАТЬ • 5x5</div>
-        <div class="hero-sub" id="queueCounter">В очередях сейчас: 1</div>
-        <div class="hero-tabs">
-          <div class="hero-tab active" id="heroSubMode">DEFAULT • MOBILE</div>
-          <div class="hero-tab">🔒 QUALIFICATION</div>
-        </div>
-      </div>
-
-      <!-- Собери пати (скрывается в 1x1) -->
-      <div class="action-row" id="partyRow">
-        <div class="action-left">
-          <div class="action-icon">👥</div>
-          <div>
-            <div class="action-title">Собери пати <span class="badge-pill" id="partyCountBadge">1/5</span></div>
-            <div class="action-desc" id="partyDesc">Код пати: CF-6348 • Состав: 1/5</div>
-          </div>
-        </div>
-        <button class="btn-secondary" onclick="openModal('partyModal')">Пати</button>
-      </div>
-
-      <!-- Друзья -->
-      <div class="action-row">
-        <div class="action-left">
-          <div class="action-icon">🤝</div>
-          <div>
-            <div class="action-title">Друзья <span class="badge-pill" id="friendsCountBadge">0</span></div>
-            <div class="action-desc">Добавить по ID из StandoffKnife и позвать в лобби</div>
-          </div>
-        </div>
-        <button class="btn-secondary" onclick="openModal('friendsModal')">Друзья</button>
-      </div>
-
-      <!-- Список лобби -->
-      <div id="lobbiesContainer"></div>
-    </section>
-
-    <!-- ВКЛАДКА: ПРОФИЛЬ -->
-    <section id="tab-profile" class="page-section">
-      <div class="action-row">
-        <div class="action-left">
-          <div class="action-icon">👤</div>
-          <div>
-            <div class="action-title" id="profileNick">Гость</div>
-            <div class="action-desc" id="profileId">ID: не привязан</div>
-          </div>
-        </div>
-        <button class="btn-secondary" onclick="openModal('authModal')">Изменить</button>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-val" id="statElo">1000</div>
-          <div class="stat-lbl">ELO Рейтинг</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val" id="statMatches">0</div>
-          <div class="stat-lbl">Матчей</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val">1.00</div>
-          <div class="stat-lbl">K/D</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ВКЛАДКА: ТОП -->
-    <section id="tab-top" class="page-section">
-      <div class="lobby-card">
-        <div class="lobby-name" style="margin-bottom:8px;">🏆 Топ игроков сезона</div>
-        <div class="player-chip">
-          <span>1. ML_MIHEI (ID: 8492014)</span>
-          <span style="color:var(--gold-1);">1000 ELO</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ВКЛАДКА: ИНВЕНТАРЬ -->
-    <section id="tab-inv" class="page-section">
-      <div class="lobby-card">
-        <div class="lobby-name" style="margin-bottom:6px;">📦 Инвентарь и награды</div>
-        <div class="lobby-empty">Здесь отображаются выигранные скины и промокоды.</div>
-      </div>
-    </section>
-
-    <!-- ВКЛАДКА: ЕЩЁ -->
-    <section id="tab-more" class="page-section">
-      <div class="lobby-card">
-        <div class="lobby-name" style="margin-bottom:8px;">⚙ Правила лиги CF STANDOFFKNIFE</div>
-        <div class="lobby-empty">
-          • Один игровой ID StandoffKnife = один аккаунт в лиге<br><br>
-          • Повторная регистрация запрещена<br><br>
-          • В режиме 1x1 капитан (1-й игрок) создаёт лобби и скидывает ID
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- НИЖНЯЯ НАВИГАЦИЯ -->
-  <nav class="bottom-nav">
-    <button class="nav-item" onclick="switchTab('profile', this)"><span>👤</span>ПРОФИЛЬ</button>
-    <button class="nav-item active" onclick="switchTab('play', this)"><span>▶</span>ИГРАТЬ</button>
-    <button class="nav-item" onclick="switchTab('top', this)"><span>🏆</span>ТОП</button>
-    <button class="nav-item" onclick="switchTab('inv', this)"><span>📦</span>ИНВЕНТАРЬ</button>
-    <button class="nav-item" onclick="switchTab('more', this)"><span>⊞</span>ЕЩЁ</button>
-  </nav>
-
-  <!-- МОДАЛКА АВТОРИЗАЦИИ -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">🛡 Вход в лигу</div>
-        <button class="modal-close" onclick="closeModal('authModal')">✕</button>
-      </div>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
-        Привяжите профиль StandoffKnife, чтобы играть 5x5 и дуэли 1x1.
-      </p>
-      <input type="text" class="input-field" id="inputGameId" placeholder="ИГРОВОЙ ID (например: 58392014)" />
-      <input type="text" class="input-field" id="inputGameNick" placeholder="НИКНЕЙМ В ИГРЕ" />
-      <button class="btn-primary" onclick="saveProfile()">ВОЙТИ В ЛИГУ</button>
+<div class="ovl" id="auth-ovl"><div class="box">
+  <div style="text-align:center;margin-bottom:14px"><div class="logo" style="width:46px;height:46px;font-size:19px;margin:0 auto 8px">CF</div><h3>Вход в CF STANDOFFKNIFE</h3><p style="font-size:12px;color:var(--sub);margin-top:4px">Введите игровой ID и никнейм (повторно входить не нужно)</p></div>
+  <input class="inp" id="in-id" inputmode="numeric" placeholder="Игровой ID (цифры)"><input class="inp" id="in-nick" placeholder="Никнейм в игре"><div class="err" id="auth-err"></div>
+  <button class="jbtn" style="width:100%;padding:12px" onclick="regOrLogin()">ВОЙТИ В ЛИГУ</button>
+</div></div>
+<div class="ovl" id="fr-ovl" onclick="if(event.target===this)cl('fr-ovl')"><div class="box">
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>🤝 Друзья по ID</b><span style="cursor:pointer;color:var(--sub)" onclick="cl('fr-ovl')">✕</span></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px"><input class="inp" style="margin:0" id="fr-id" inputmode="numeric" placeholder="ID друга"><button class="jbtn" onclick="addFr()">+</button></div>
+  <div class="err" id="fr-err"></div><div id="fr-list" style="max-height:170px;overflow-y:auto"></div>
+</div></div>
+<div class="ovl" id="pt-ovl" onclick="if(event.target===this)cl('pt-ovl')"><div class="box">
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>👥 Пати (до 5 игроков)</b><span style="cursor:pointer;color:var(--sub)" onclick="cl('pt-ovl')">✕</span></div>
+  <div style="background:var(--slot);padding:9px;border-radius:10px;font-size:12px;margin-bottom:10px">Код пати: <b style="color:var(--gold)" id="pt-code"></b></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px"><input class="inp" style="margin:0" id="pt-in" placeholder="Код пати друга (CF-...)"><button class="jbtn" onclick="joinPt()">Вступить</button></div>
+  <div id="pt-list"></div>
+</div></div>
+<div class="ovl" id="match-ovl" style="align-items:flex-start"><div class="box" style="max-width:440px">
+  <div id="st-ready" style="text-align:center;padding:8px 0">
+    <div class="ring" id="rdy-tmr">25</div>
+    <div style="font-size:22px;font-weight:900">МАТЧ НАЙДЕН</div>
+    <div style="font-size:12px;color:var(--sub);margin-top:3px" id="rdy-side">CF LEAGUE • Команда A</div>
+    <div class="cap-tag" id="rdy-cap" style="display:none">КАПИТАН</div>
+    <div class="rdy-row" id="rdy-dots"></div>
+    <div style="font-size:12px;font-weight:800;margin-bottom:14px" id="rdy-cnt">0 / 2 готовы</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="abtn" style="padding:13px" onclick="declineMatch()">ОТКЛОНИТЬ</button>
+      <button class="jbtn" style="padding:13px" id="btn-acc" onclick="acceptMatch()">ПРИНЯТЬ</button>
     </div>
   </div>
-
-  <!-- МОДАЛКА ДРУЗЕЙ -->
-  <div class="modal-overlay" id="friendsModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">🤝 Друзья</div>
-        <button class="modal-close" onclick="closeModal('friendsModal')">✕</button>
-      </div>
-      <input type="text" class="input-field" id="friendIdInput" placeholder="Введите игровой ID друга из StandoffKnife" />
-      <button class="btn-primary" onclick="addFriend()">Добавить</button>
-      <div id="friendsList" style="margin-top:12px;"></div>
+  <div id="st-veto" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:13px">БАН КАРТ</b><span style="font-size:12px;color:var(--sub)" id="v-step">1/6</span></div>
+    <div class="turn-bar"><div><div style="font-size:13px;font-weight:800" id="v-turn-txt">Ход капитана...</div><div style="font-size:11px;color:var(--sub)" id="v-turn-sub">Команда A</div></div><div class="tmr-pill" id="v-tmr">0:25</div></div>
+    <div id="v-list"></div>
+  </div>
+  <div id="st-vote" style="display:none;text-align:center">
+    <div style="font-size:12px;color:var(--grn);font-weight:800">Карта определена: <span id="vt-map">—</span></div>
+    <div style="font-size:18px;font-weight:900;margin:4px 0">ГОЛОСОВАНИЕ ЗА РАУНДЫ</div>
+    <div style="font-size:12px;color:var(--sub)">Осталось: <b style="color:var(--gold)" id="vt-tmr">6</b> сек.</div>
+    <div class="vote-grid">
+      <div class="v-btn" id="vb-10" onclick="voteRnd(10)"><div style="font-size:18px;font-weight:900">10</div><div style="font-size:10px;color:var(--sub)">Голосов: <b id="vc-10">0</b></div></div>
+      <div class="v-btn" id="vb-13" onclick="voteRnd(13)"><div style="font-size:18px;font-weight:900">13</div><div style="font-size:10px;color:var(--sub)">Голосов: <b id="vc-13">0</b></div></div>
+      <div class="v-btn" id="vb-16" onclick="voteRnd(16)"><div style="font-size:18px;font-weight:900">16</div><div style="font-size:10px;color:var(--sub)">Голосов: <b id="vc-16">0</b></div></div>
     </div>
   </div>
-
-  <!-- МОДАЛКА ПАТИ -->
-  <div class="modal-overlay" id="partyModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">👥 Пати (до 5 игроков)</div>
-        <button class="modal-close" onclick="closeModal('partyModal')">✕</button>
+  <div id="st-live" style="display:none">
+    <div class="m-banner" id="live-banner">
+      <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800"><span style="color:var(--gold)">ВЫБРАННАЯ КАРТА • ДО <span id="lv-rnd">10</span> РАУНДОВ</span><span style="color:var(--grn)">● ИДЁТ ИГРА</span></div>
+      <div style="font-size:24px;font-weight:900;margin-top:2px" id="lv-map">RUST</div>
+      <div class="host-box">
+        <div style="display:flex;align-items:center;gap:9px"><div class="logo" id="hs-ava" style="background:var(--gold);color:#110c0e">CF</div><div><div style="font-size:9px;color:var(--sub);font-weight:800">ХОСТ ЛОББИ (КАПИТАН)</div><div style="font-size:14px;font-weight:900" id="hs-nick">—</div></div></div>
+        <div style="text-align:right;cursor:pointer" onclick="copyHostId()"><div style="font-size:9px;color:var(--sub)">StandoffKnife ID 📋</div><div style="font-size:14px;font-weight:900;color:var(--gold)" id="hs-id">—</div></div>
       </div>
-      <p style="font-size:12px; color:var(--text-muted);">
-        Код вашего пати: <strong style="color:#fff;">CF-6348</strong>. В режиме 1x1 пати отключается автоматически.
-      </p>
+      <div style="font-size:11px;color:#ddd;margin-top:8px">⏳ Заход в лобби: <b style="color:var(--gold)" id="lv-join-tmr">5:00</b> • Зайдите в игру по ID хоста</div>
     </div>
-  </div>
-
-  <!-- МОДАЛКА МАТЧА (БАН КАРТ -> ВЫБОР РАУНДОВ -> ЗОЛОТАЯ ПЛАШКА КАПИТАНА) -->
-  <div class="modal-overlay" id="matchModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title" id="matchModalTitle">🔥 МАТЧ НАЙДЕН (2/2)</div>
-        <button class="modal-close" onclick="closeModal('matchModal')">✕</button>
-      </div>
-
-      <!-- Индикатор шагов -->
-      <div class="step-indicator">
-        <div class="step-dot active" id="stepDot1"></div>
-        <div class="step-dot" id="stepDot2"></div>
-        <div class="step-dot" id="stepDot3"></div>
-      </div>
-
-      <!-- ШАГ 1: БАН КАРТ -->
-      <div id="matchStep1">
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
-          Вычеркните лишние карты (нажмите на карту для бана), пока не останется <strong>1 карта матча</strong>:
-        </p>
-        <div class="maps-grid" id="mapsGrid"></div>
-      </div>
-
-      <!-- ШАГ 2: ВЫБОР КОЛИЧЕСТВА РАУНДОВ (10 / 13 / 16) -->
-      <div id="matchStep2" style="display:none;">
-        <div class="summary-strip">
-          <span>Карта матча:</span>
-          <strong style="color:var(--green);" id="chosenMapLabel">Sandstone</strong>
-        </div>
-        <p style="font-size:12px; color:var(--text-muted);">
-          Выберите количество раундов для дуэли 1x1:
-        </p>
-        <div class="rounds-grid">
-          <div class="round-option" onclick="selectRounds(10, this)">
-            <div class="round-num">10</div>
-            <div class="round-sub">Быстрый</div>
-          </div>
-          <div class="round-option selected" onclick="selectRounds(13, this)">
-            <div class="round-num">13</div>
-            <div class="round-sub">Стандарт</div>
-          </div>
-          <div class="round-option" onclick="selectRounds(16, this)">
-            <div class="round-num">16</div>
-            <div class="round-sub">Полный</div>
-          </div>
-        </div>
-        <button class="btn-primary" style="background:linear-gradient(135deg,#ffd700,#f59e0b); color:#111;" onclick="confirmRounds()">
-          ПОДТВЕРДИТЬ ФОРМАТ МАТЧА
-        </button>
-      </div>
-
-      <!-- ШАГ 3: ЗОЛОТАЯ ПЛАШКА КАПИТАНА -->
-      <div id="matchStep3" style="display:none;">
-        <div class="summary-strip">
-          <span>Карта: <strong style="color:#fff;" id="finalMapText">Sandstone</strong></span>
-          <span>Раундов: <strong style="color:var(--gold-1);" id="finalRoundsText">13</strong></span>
-        </div>
-
-        <div class="gold-captain-card">
-          <div class="gold-badge">👑 КАПИТАН / ХОСТ ЛОББИ (ИГРОК #1)</div>
-          <div class="captain-row">
-            <div>
-              <div style="font-size:11px; color:#d4af37;">Никнейм создателя:</div>
-              <div class="captain-nick" id="captainNickDisplay">ML_MIHEI</div>
-            </div>
-            <div class="lvl-badge" style="border-color:#ffd700; color:#ffd700;">3</div>
-          </div>
-
-          <div class="captain-id-box">
-            <span class="captain-id-label">ID В ИГРЕ:</span>
-            <span class="captain-id-value" id="captainIdDisplay">8492014</span>
-          </div>
-
-          <button class="btn-gold-copy" id="copyCaptainIdBtn" onclick="copyCaptainId()">
-            📋 СКОПИРОВАТЬ ID КАПИТАНА
-          </button>
-        </div>
-
-        <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px;">
-          Игрок #1 создаёт закрытое лобби в StandoffKnife. Второй игрок копирует ID и заходит в дуэль.
-        </p>
-      </div>
-
+    <div class="t-cols"><div class="t-card"><div style="color:var(--ct);font-size:11px;font-weight:900;margin-bottom:6px">🛡 Команда A • Спецназ</div><div id="lv-ct"></div></div><div class="t-card"><div style="color:var(--t);font-size:11px;font-weight:900;margin-bottom:6px">🔥 Команда B • Террористы</div><div id="lv-t"></div></div></div>
+    <div class="chat-box">
+      <div style="font-size:12px;font-weight:800">💬 Чат лобби <span style="font-size:10px;color:var(--sub);font-weight:400">(видят обе команды)</span></div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div style="display:flex;gap:6px"><input class="inp" style="margin:0;padding:9px;font-size:12px" id="chat-in" placeholder="Сообщение..."><button class="jbtn" onclick="sendChat()">➤</button></div>
     </div>
+    <button class="abtn" style="width:100%;margin-top:8px" onclick="finishMatch()">Завершить / Выйти из матча</button>
   </div>
-
-  <script>
-    // Состояние приложения
-    const state = {
-      mode: '5v5', // '5v5' или '1v1'
-      user: JSON.parse(localStorage.getItem('cf_user')) || {
-        nick: '',
-        id: '',
-        elo: 1000,
-        lvl: 3,
-        matches: 0
-      },
-      friends: JSON.parse(localStorage.getItem('cf_friends')) || [],
-      lobbies5v5: [
-        { id: 1, players: [{ nick: 'ML_MIHEI', id: '8492014', lvl: 3 }] },
-        { id: 2, players: [] },
-        { id: 3, players: [] },
-        { id: 4, players: [] }
-      ],
-      lobbies1v1: [
-        { id: 1, players: [{ nick: 'ML_MIHEI', id: '8492014', lvl: 3 }] },
-        { id: 2, players: [] },
-        { id: 3, players: [] },
-        { id: 4, players: [] }
-      ],
-      maps5v5: ['Sandstone', 'Rust', 'Province', 'Sakura', 'Zone 9', 'Dune', 'Breeze'],
-      maps1v1: ['Sandstone', 'Rust', 'Yard', 'Bridge', 'Temple'],
-      activeMatch: {
-        maps: [],
-        banned: [],
-        selectedMap: '',
-        rounds: 13,
-        captain: null
-      }
-    };
-
-    function init() {
-      updateProfileUI();
-      renderLobbies();
-      renderFriends();
-    }
-
-    // Переключение 5x5 <-> 1x1
-    function switchMode(newMode) {
-      state.mode = newMode;
-      const btn5 = document.getElementById('btnMode5v5');
-      const btn1 = document.getElementById('btnMode1v1');
-      const heroCard = document.getElementById('heroCard');
-      const heroTitle = document.getElementById('heroTitle');
-      const heroSubMode = document.getElementById('heroSubMode');
-      const partyRow = document.getElementById('partyRow');
-
-      if (newMode === '1v1') {
-        btn5.classList.remove('active');
-        btn1.classList.add('active', 'duel-mode');
-        heroCard.classList.add('duel-theme');
-        heroTitle.textContent = 'ДУЭЛЬ • 1x1';
-        heroSubMode.textContent = 'DUEL 1V1 • AIM / KNIFE';
-        partyRow.style.display = 'none';
-      } else {
-        btn1.classList.remove('active', 'duel-mode');
-        btn5.classList.add('active');
-        heroCard.classList.remove('duel-theme');
-        heroTitle.textContent = 'ИГРАТЬ • 5x5';
-        heroSubMode.textContent = 'DEFAULT • MOBILE';
-        partyRow.style.display = 'flex';
-      }
-
-      renderLobbies();
-    }
-
-    // Отрисовка лобби
-    function renderLobbies() {
-      const container = document.getElementById('lobbiesContainer');
-      const is1v1 = state.mode === '1v1';
-      const lobbies = is1v1 ? state.lobbies1v1 : state.lobbies5v5;
-      const maxPlayers = is1v1 ? 2 : 10;
-
-      let totalInQueue = 0;
-      lobbies.forEach(l => totalInQueue += l.players.length);
-      document.getElementById('queueCounter').textContent = `В очередях сейчас: ${totalInQueue}`;
-
-      container.innerHTML = lobbies.map(lobby => {
-        const isJoined = state.user.id && lobby.players.some(p => p.id === state.user.id);
-        const avgElo = lobby.players.length ? 1000 : 1000;
-        const numFormatted = String(lobby.id).padStart(2, '0');
-
-        const playersHtml = lobby.players.length
-          ? `<div class="players-list">
-              ${lobby.players.map((p, idx) => `
-                <div class="player-chip">
-                  <span>${idx === 0 ? '👑 ' : ''}${p.nick} <span style="color:#6b7280; font-size:10px;">#${p.id}</span></span>
-                  <span class="lvl-badge">${p.lvl || 3}</span>
-                </div>
-              `).join('')}
-            </div>`
-          : `<div class="lobby-empty">Пока никого — будь первым</div>`;
-
-        return `
-          <div class="lobby-card ${is1v1 ? 'duel-lobby' : ''} ${isJoined ? 'joined' : ''}">
-            <div class="lobby-num-bg">${numFormatted}</div>
-            <div class="lobby-top">
-              <div class="lobby-name">
-                ЛОББИ #${lobby.id}
-                ${is1v1 ? '<span class="duel-tag">1x1</span>' : ''}
-              </div>
-              <div class="lobby-controls">
-                <span class="lobby-count">${lobby.players.length}/${maxPlayers}</span>
-                <button class="btn-join ${isJoined ? 'leave' : (is1v1 ? 'gold' : '')}" onclick="toggleLobby(${lobby.id})">
-                  ${isJoined ? 'Выйти' : 'Войти'}
-                </button>
-              </div>
-            </div>
-            ${playersHtml}
-            <div class="lobby-meta">
-              <span>Средний ELO: <strong style="color:#fff;">${avgElo}</strong></span>
-              <span>${is1v1 ? '⚔️ Формат: 1 на 1' : '👥 Пати: 0'}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Вход / выход из лобби
-    function toggleLobby(lobbyId) {
-      if (!state.user.id || !state.user.nick) {
-        openModal('authModal');
-        return;
-      }
-
-      const is1v1 = state.mode === '1v1';
-      const lobbies = is1v1 ? state.lobbies1v1 : state.lobbies5v5;
-      const maxPlayers = is1v1 ? 2 : 10;
-      const lobby = lobbies.find(l => l.id === lobbyId);
-
-      const existingIdx = lobby.players.findIndex(p => p.id === state.user.id);
-      if (existingIdx !== -1) {
-        lobby.players.splice(existingIdx, 1);
-        renderLobbies();
-        return;
-      }
-
-      // Убираем игрока из других лобби
-      lobbies.forEach(l => {
-        l.players = l.players.filter(p => p.id !== state.user.id);
-      });
-
-      lobby.players.push({
-        nick: state.user.nick,
-        id: state.user.id,
-        lvl: state.user.lvl || 3
-      });
-
-      renderLobbies();
-
-      // Если лобби заполнилось (2/2 в 1x1 или 10/10 в 5x5) -> старт матча!
-      if (lobby.players.length >= maxPlayers) {
-        startMatchFlow(lobby);
-      }
-    }
-
-    // Запуск сценария матча (Бан карт -> Выбор раундов -> Золотая плашка капитана)
-    function startMatchFlow(lobby) {
-      const is1v1 = state.mode === '1v1';
-      const pool = is1v1 ? [...state.maps1v1] : [...state.maps5v5];
-
-      // Капитан — первый зашедший игрок в лобби
-      const captain = lobby.players[0];
-
-      state.activeMatch = {
-        maps: pool,
-        banned: [],
-        selectedMap: '',
-        rounds: 13,
-        captain: captain
-      };
-
-      document.getElementById('matchModalTitle').textContent = is1v1
-        ? '🔥 ДУЭЛЬ НАЙДЕНА (2/2)'
-        : '🔥 МАТЧ НАЙДЕН (10/10)';
-
-      setMatchStep(1);
-      renderMapsGrid();
-      openModal('matchModal');
-    }
-
-    function setMatchStep(step) {
-      document.getElementById('matchStep1').style.display = step === 1 ? 'block' : 'none';
-      document.getElementById('matchStep2').style.display = step === 2 ? 'block' : 'none';
-      document.getElementById('matchStep3').style.display = step === 3 ? 'block' : 'none';
-
-      document.getElementById('stepDot1').className = 'step-dot ' + (step > 1 ? 'done' : 'active');
-      document.getElementById('stepDot2').className = 'step-dot ' + (step > 2 ? 'done' : (step === 2 ? 'active' : ''));
-      document.getElementById('stepDot3').className = 'step-dot ' + (step === 3 ? 'active' : '');
-    }
-
-    function renderMapsGrid() {
-      const grid = document.getElementById('mapsGrid');
-      const remaining = state.activeMatch.maps.filter(m => !state.activeMatch.banned.includes(m));
-
-      grid.innerHTML = state.activeMatch.maps.map(mapName => {
-        const isBanned = state.activeMatch.banned.includes(mapName);
-        const isWinner = remaining.length === 1 && !isBanned;
-        return `
-          <div class="map-card ${isBanned ? 'banned' : ''} ${isWinner ? 'winner' : ''}" onclick="banMap('${mapName}')">
-            ${mapName}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function banMap(mapName) {
-      if (state.activeMatch.banned.includes(mapName)) return;
-      state.activeMatch.banned.push(mapName);
-
-      const remaining = state.activeMatch.maps.filter(m => !state.activeMatch.banned.includes(m));
-      renderMapsGrid();
-
-      if (remaining.length === 1) {
-        state.activeMatch.selectedMap = remaining[0];
-        setTimeout(() => {
-          document.getElementById('chosenMapLabel').textContent = state.activeMatch.selectedMap;
-          if (state.mode === '1v1') {
-            setMatchStep(2); // Переход к выбору 10 / 13 / 16 раундов
-          } else {
-            showCaptainCard(); // В 5x5 сразу к карточке хоста
-          }
-        }, 450);
-      }
-    }
-
-    function selectRounds(count, el) {
-      state.activeMatch.rounds = count;
-      document.querySelectorAll('.round-option').forEach(opt => opt.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-
-    function confirmRounds() {
-      showCaptainCard();
-    }
-
-    function showCaptainCard() {
-      const cap = state.activeMatch.captain || { nick: 'ML_MIHEI', id: '8492014' };
-      document.getElementById('finalMapText').textContent = state.activeMatch.selectedMap;
-      document.getElementById('finalRoundsText').textContent = state.activeMatch.rounds;
-      document.getElementById('captainNickDisplay').textContent = cap.nick;
-      document.getElementById('captainIdDisplay').textContent = cap.id;
-
-      const copyBtn = document.getElementById('copyCaptainIdBtn');
-      copyBtn.innerHTML = '📋 СКОПИРОВАТЬ ID КАПИТАНА';
-
-      setMatchStep(3);
-    }
-
-    function copyCaptainId() {
-      const idText = document.getElementById('captainIdDisplay').textContent;
-      const btn = document.getElementById('copyCaptainIdBtn');
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(idText).catch(() => fallbackCopy(idText));
-      } else {
-        fallbackCopy(idText);
-      }
-
-      btn.innerHTML = '✅ ID СКОПИРОВАН В БУФЕР!';
-      setTimeout(() => {
-        btn.innerHTML = '📋 СКОПИРОВАТЬ ID КАПИТАНА';
-      }, 2200);
-    }
-
-    function fallbackCopy(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
-
-    // Профиль и авторизация
-    function saveProfile() {
-      const id = document.getElementById('inputGameId').value.trim();
-      const nick = document.getElementById('inputGameNick').value.trim();
-      if (!id || !nick) {
-        alert('Введите игровой ID и никнейм!');
-        return;
-      }
-      state.user.id = id;
-      state.user.nick = nick;
-      localStorage.setItem('cf_user', JSON.stringify(state.user));
-      updateProfileUI();
-      closeModal('authModal');
-    }
-
-    function updateProfileUI() {
-      const banner = document.getElementById('authBanner');
-      if (state.user.id && state.user.nick) {
-        banner.style.display = 'none';
-        document.getElementById('profileNick').textContent = state.user.nick;
-        document.getElementById('profileId').textContent = `ID: ${state.user.id}`;
-      } else {
-        banner.style.display = 'flex';
-      }
-      document.getElementById('headerElo').textContent = `⚡ ${state.user.elo}`;
-      document.getElementById('statElo').textContent = state.user.elo;
-    }
-
-    // Друзья
-    function addFriend() {
-      const fid = document.getElementById('friendIdInput').value.trim();
-      if (!fid) return;
-      if (!state.friends.includes(fid)) {
-        state.friends.push(fid);
-        localStorage.setItem('cf_friends', JSON.stringify(state.friends));
-      }
-      document.getElementById('friendIdInput').value = '';
-      renderFriends();
-    }
-
-    function renderFriends() {
-      document.getElementById('friendsCountBadge').textContent = state.friends.length;
-      const list = document.getElementById('friendsList');
-      list.innerHTML = state.friends.map(id => `
-        <div class="player-chip" style="margin-bottom:6px;">
-          <span>Игрок ID: ${id}</span>
-          <span style="color:var(--green); font-size:11px;">В списке</span>
-        </div>
-      `).join('');
-    }
-
-    // Навигация и модалки
-    function switchTab(tabName, btn) {
-      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      btn.classList.add('active');
-    }
-
-    function openModal(id) {
-      document.getElementById(id).classList.add('open');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('open');
-    }
-
-    init();
-  </script>
-</body>
-</html>
+</div></div>
+<header class="hdr"><div style="display:flex;align-items:center;gap:9px"><div class="logo">CF</div><div><div style="font-size:13px;font-weight:800">CF STANDOFFKNIFE</div><div style="font-size:10px;color:var(--sub)">FACEIT LEAGUE</div></div></div><div class="pill" onclick="togFmt()"><span class="dot"></span><span id="fmt-lbl">1x1 ТЕСТ</span></div><div class="elo">⚡ <span id="u-elo">1000</span></div></header>
+<div class="wrap">
+  <div id="scr-play" class="scr act">
+    <div class="warn" id="w-ban" onclick="op('auth-ovl')">⚠ НАЖМИТЕ ДЛЯ ВХОДА ПО ID И НИКУ &gt;</div>
+    <div class="hero"><div style="font-size:24px;font-weight:900">ИГРАТЬ</div><div style="font-size:12px;color:var(--sub);margin-top:3px">В очередях сейчас: <b style="color:#fff" id="q-cnt">0</b></div><div class="tabs"><button class="qbtn act" id="b-1x1" onclick="setFmt('1x1')">⚡ 1x1 ТЕСТ</button><button class="qbtn" id="b-5x5" onclick="setFmt('5x5')">DEFAULT • 5x5</button></div></div>
+    <div class="bar"><div><div style="font-size:13px;font-weight:700">👥 Собери пати <span id="pt-cnt">1</span>/5</div><div style="font-size:11px;color:var(--sub)">Вход в лобби всей командой</div></div><button class="abtn" onclick="opPt()">Пати</button></div>
+    <div class="bar"><div><div style="font-size:13px;font-weight:700">🤝 Друзья <span id="fr-cnt">0</span></div><div style="font-size:11px;color:var(--sub)">Добавить по ID из игры</div></div><button class="abtn" onclick="opFr()">Друзья</button></div>
+    <div id="lobbies"></div>
+  </div>
+  <div id="scr-prof" class="scr"><div class="lcard" style="margin-top:12px"><h3 id="p-nick">Гость</h3><p style="font-size:12px;color:var(--sub);margin-top:4px" id="p-id">ID: не привязан</p><button class="jbtn" style="margin-top:10px" id="p-btn" onclick="op('auth-ovl')">Войти</button></div></div>
+  <div id="scr-top" class="scr"><div class="lcard" style="margin-top:12px"><h3>🏆 Топ игроков</h3><p style="font-size:12px;color:var(--sub);margin-top:6px">Таблица обновится после первых игр.</p></div></div>
+  <div id="scr-more" class="scr"><div class="lcard" style="margin-top:12px"><h3>⚙ Правила лиги</h3><p style="font-size:12px;color:var(--sub);margin-top:6px">• 1 игровой ID = 1 аккаунт<br>• Поочерёдный бан карт (25 сек на ход)<br>• Голосование за раунды (6 сек)</p></div></div>
+</div>
+<nav class="nav"><div class="nitem" onclick="tab('prof',this)">👤<br>ПРОФИЛЬ</div><div class="nitem act" onclick="tab('play',this)">▶<br>ИГРАТЬ</div><div class="nitem" onclick="tab('top',this)">🏆<br>ТОП</div><div class="nitem" onclick="tab('more',this)">⊞<br>ЕЩЁ</div></nav>
+<script>
+const SB_URL='https://supabase.co',SB_KEY='sb_publishable_kElqIYFA9DBYN703YlhHTw_JMgOsXqi';
+let db=null,devId=localStorage.getItem('cf_dev')||'dev_'+Math.random().toString(36).slice(2,10);localStorage.setItem('cf_dev',devId);
+const me={tg_id:devId,so2_id:'',nick:'',elo:1000,auth:false};
+let fmt='1x1',lPls=[],party=[],pCode='CF-'+devId.slice(-4).toUpperCase(),busy=false,curLobby=null,curMatch=null,autoActing=false,joinSec=300;
+const MAPS=[{id:'sandstone',name:'Sandstone',c1:'#c28b40',c2:'#5c3a14'},{id:'province',name:'Province',c1:'#4a7c59',c2:'#1e3826'},{id:'breeze',name:'Breeze',c1:'#2b8cbe',c2:'#10384f'},{id:'dune',name:'Dune',c1:'#d4a359',c2:'#59401a'},{id:'rust',name:'Rust',c1:'#b84a27',c2:'#471b0e'},{id:'hanami',name:'Hanami',c1:'#d96b98',c2:'#4d1d34'}];
+renderL();
+window.addEventListener('load',async()=>{
+  if(window.Telegram?.WebApp){Telegram.WebApp.ready();Telegram.WebApp.expand();if(Telegram.WebApp.initDataUnsafe?.user)me.tg_id=String(Telegram.WebApp.initDataUnsafe.user.id);}
+  if(!window.supabase)return;db=window.supabase.createClient(SB_URL,SB_KEY);
+  const sSid=localStorage.getItem('cf_so2_id');
+  const {data}=await(sSid?db.from('players').select('*').eq('so2_id',sSid).maybeSingle():db.from('players').select('*').eq('tg_id',me.tg_id).maybeSingle());
+  if(data)applyMe(data);else op('auth-ovl');
+  await tick1s();await loadFr();await loadPt();
+  setInterval(tick1s,1000);
+});
+function op(id){document.getElementById(id).classList.add('open');}
+function cl(id){document.getElementById(id).classList.remove('open');}
+function applyMe(p){me.tg_id=p.tg_id;me.so2_id=p.so2_id;me.nick=p.nickname;me.elo=p.elo||1000;me.auth=true;localStorage.setItem('cf_so2_id',p.so2_id);document.getElementById('w-ban').style.display='none';document.getElementById('p-nick').textContent=p.nickname;document.getElementById('p-id').textContent='ID: '+p.so2_id;document.getElementById('p-btn').style.display='none';document.getElementById('u-elo').textContent=me.elo;cl('auth-ovl');}
+async function regOrLogin(){
+  const sid=document.getElementById('in-id').value.trim(),nk=document.getElementById('in-nick').value.trim(),er=document.getElementById('auth-err');
+  if(!/^\d{4,15}$/.test(sid)){er.textContent='ID только цифры (4-15 знаков)';er.style.display='block';return;}
+  if(nk.length<2){er.textContent='Введите никнейм';er.style.display='block';return;}
+  const {data:ex}=await db.from('players').select('*').eq('so2_id',sid).maybeSingle();
+  if(ex){if(ex.nickname.toLowerCase()===nk.toLowerCase()){applyMe(ex);await loadFr();await loadPt();return;}er.textContent='Этот ID привязан к другому нику!';er.style.display='block';return;}
+  const {data:nkT}=await db.from('players').select('tg_id').ilike('nickname',nk).maybeSingle();
+  if(nkT){er.textContent='Этот никнейм уже занят!';er.style.display='block';return;}
+  
