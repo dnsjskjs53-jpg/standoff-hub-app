@@ -6,254 +6,116 @@
   <title>STANDOFF HUB</title>
   <script src="https://telegram.org"></script>
   <style>
-    :root {
-      --bg: #0f1115;
-      --card: #181b22;
-      --accent: #ff5500;
-      --accent-hover: #e04b00;
-      --text: #ffffff;
-      --muted: #8b949e;
-      --border: #2a2f3a;
-      --green: #2ea043;
-      --red: #da3633;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 80px; }
-    
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .logo { font-size: 20px; font-weight: 900; letter-spacing: 1px; color: var(--accent); }
-    .elo-badge { background: rgba(255, 85, 0, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 13px; border: 1px solid rgba(255, 85, 0, 0.3); }
-
-    .screen { display: none; animation: fadeIn 0.2s ease; }
-    .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text); display: flex; justify-content: space-between; }
-
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.15s; text-align: center; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:active { background: var(--accent-hover); transform: scale(0.98); }
-    .btn-danger { background: var(--red); color: #fff; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); margin-top: 8px; }
-
-    /* Поиск */
-    .search-box { text-align: center; padding: 30px 16px; }
-    .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .timer { font-size: 28px; font-weight: 800; margin: 10px 0; display: none; }
-
-    /* Лобби и баны карт */
-    .players-list { display: flex; flex-direction: column; gap: 8px; }
-    .player-row { display: flex; justify-content: space-between; align-items: center; background: #12141a; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); }
-    .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .map-item { background: #12141a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; font-weight: 600; cursor: pointer; position: relative; }
-    .map-item.banned { opacity: 0.35; text-decoration: line-through; border-color: var(--red); pointer-events: none; }
-    .map-item.picked { border-color: var(--green); background: rgba(46, 160, 67, 0.15); }
-
-    /* Профиль */
-    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-    .stat-box { background: #12141a; padding: 12px 6px; border-radius: 10px; border: 1px solid var(--border); }
-    .stat-val { font-size: 18px; font-weight: 800; color: var(--accent); }
-    .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    /* Нижняя навигация */
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; }
-    .nav-btn { background: none; border: none; color: var(--muted); font-size: 12px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-    .nav-btn.active { color: var(--accent); }
+    :root { --bg:#0f1115; --card:#181b22; --accent:#ff5500; --text:#fff; --muted:#8b949e; --border:#2a2f3a; --green:#2ea043; --red:#da3633; }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+    body { background:var(--bg); color:var(--text); padding:16px; padding-bottom:80px; }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .logo { font-size:20px; font-weight:900; color:var(--accent); }
+    .elo-badge { background:rgba(255,85,0,0.15); color:var(--accent); padding:4px 10px; border-radius:12px; font-weight:700; font-size:13px; border:1px solid rgba(255,85,0,0.3); }
+    .screen { display:none; } .screen.active { display:block; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
+    .card-title { font-size:15px; font-weight:700; margin-bottom:10px; display:flex; justify-content:space-between; }
+    .btn { width:100%; padding:14px; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-danger { background:var(--red); color:#fff; }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); margin-top:8px; }
+    .search-box { text-align:center; padding:30px 16px; }
+    .spinner { width:44px; height:44px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px; display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .timer { font-size:28px; font-weight:800; margin:10px 0; display:none; }
+    .players-list { display:flex; flex-direction:column; gap:8px; }
+    .player-row { display:flex; justify-content:space-between; align-items:center; background:#12141a; padding:10px 12px; border-radius:10px; border:1px solid var(--border); }
+    .map-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .map-item { background:#12141a; border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; font-weight:600; cursor:pointer; }
+    .map-item.banned { opacity:0.35; text-decoration:line-through; border-color:var(--red); pointer-events:none; }
+    .map-item.picked { border-color:var(--green); background:rgba(46,160,67,0.15); }
+    .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
+    .stat-box { background:#12141a; padding:12px 6px; border-radius:10px; border:1px solid var(--border); }
+    .stat-val { font-size:18px; font-weight:800; color:var(--accent); }
+    .stat-lbl { font-size:11px; color:var(--muted); margin-top:2px; }
+    .nav { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:10px 0; }
+    .nav-btn { background:none; border:none; color:var(--muted); font-size:12px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+    .nav-btn.active { color:var(--accent); }
   </style>
 </head>
 <body>
-
-  <div class="header">
-    <div class="logo">STANDOFF HUB</div>
-    <div class="elo-badge" id="header-elo">1000 ELO</div>
-  </div>
-
-  <!-- ЭКРАН 1: ПОИСК ИГРЫ -->
+  <div class="header"><div class="logo">STANDOFF HUB</div><div class="elo-badge">1000 ELO</div></div>
   <div id="screen-play" class="screen active">
     <div class="card search-box">
       <div class="spinner" id="search-spinner"></div>
       <h2 id="search-status">Готов к матчу 5v5</h2>
-      <p style="color: var(--muted); font-size: 13px; margin-top: 6px;" id="search-sub">Соревновательный режим • Автобаланс</p>
+      <p style="color:var(--muted);font-size:13px;margin-top:6px;">Соревновательный режим • Автобаланс</p>
       <div class="timer" id="search-timer">00:00</div>
-      <div style="margin-top: 20px;">
-        <button class="btn btn-primary" id="btn-find" onclick="toggleSearch()">НАЙТИ МАТЧ</button>
-      </div>
+      <div style="margin-top:20px;"><button class="btn btn-primary" id="btn-find" onclick="toggleSearch()">НАЙТИ МАТЧ</button></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Активные правила</div>
-      <p style="font-size: 13px; color: var(--muted); line-height: 1.5;">
-        • Режим: Закладка бомбы (5x5)<br>
-        • Капитаны банят карты по очереди<br>
-        • За выход из матча — штраф 30 ELO
-      </p>
-    </div>
+    <div class="card"><div class="card-title">Активные правила</div><p style="font-size:13px;color:var(--muted);line-height:1.5;">• Режим: Закладка бомбы (5x5)<br>• Капитаны банят карты по очереди<br>• За выход из матча — штраф 30 ELO</p></div>
   </div>
-
-  <!-- ЭКРАН 2: ЛОББИ И БАН КАРТ -->
   <div id="screen-lobby" class="screen">
     <div class="card">
-      <div class="card-title">
-        <span>Лобби матча #4821</span>
-        <span style="color: var(--green);" id="lobby-phase">Бан карт</span>
-      </div>
-      <p style="font-size: 13px; color: var(--muted); margin-bottom: 10px;" id="ban-hint">Нажмите на карту, чтобы забанить её:</p>
+      <div class="card-title"><span>Лобби матча #4821</span><span style="color:var(--green);" id="lobby-phase">Бан карт</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px;" id="ban-hint">Нажмите на карту, чтобы забанить её:</p>
       <div class="map-grid" id="map-pool"></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Игроки в лобби (10/10)</div>
-      <div class="players-list" id="lobby-players"></div>
-      <button class="btn btn-outline" onclick="leaveLobby()">Покинуть лобби</button>
-    </div>
+    <div class="card"><div class="card-title">Игроки в лобби (10/10)</div><div class="players-list" id="lobby-players"></div><button class="btn btn-outline" onclick="leaveLobby()">Покинуть лобби</button></div>
   </div>
-
-  <!-- ЭКРАН 3: ПРОФИЛЬ -->
   <div id="screen-profile" class="screen">
-    <div class="card" style="display: flex; align-items: center; gap: 14px;">
-      <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px;" id="avatar-letter">P</div>
-      <div>
-        <div style="font-weight: 800; font-size: 17px;" id="user-name">Игрок</div>
-        <div style="font-size: 13px; color: var(--muted);" id="user-id">ID: 000000</div>
-      </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;">
+      <div style="width:50px;height:50px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;" id="avatar-letter">P</div>
+      <div><div style="font-weight:800;font-size:17px;" id="user-name">Игрок</div><div style="font-size:13px;color:var(--muted);" id="user-id">ID: 000000</div></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Статистика сезона</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="stat-val" id="stat-elo">1000</div><div class="stat-lbl">ELO</div></div>
-        <div class="stat-box"><div class="stat-val">0</div><div class="stat-lbl">Матчей</div></div>
-        <div class="stat-box"><div class="stat-val">0%</div><div class="stat-lbl">Винрейт</div></div>
-      </div>
-    </div>
+    <div class="card"><div class="card-title">Статистика сезона</div><div class="stat-grid"><div class="stat-box"><div class="stat-val">1000</div><div class="stat-lbl">ELO</div></div><div class="stat-box"><div class="stat-val">0</div><div class="stat-lbl">Матчей</div></div><div class="stat-box"><div class="stat-val">0%</div><div class="stat-lbl">Винрейт</div></div></div></div>
   </div>
-
-  <!-- НИЖНЕЕ МЕНЮ -->
   <div class="nav">
-    <button class="nav-btn active" onclick="switchTab('play', this)">
-      <span>⚔️</span><span>Играть</span>
-    </button>
-    <button class="nav-btn" onclick="switchTab('lobby', this)">
-      <span>🛡️</span><span>Лобби</span>
-    </button>
-    <button class="nav-btn" onclick="switchTab('profile', this)">
-      <span>👤</span><span>Профиль</span>
-    </button>
+    <button class="nav-btn active" onclick="switchTab('play',this)"><span>⚔️</span><span>Играть</span></button>
+    <button class="nav-btn" onclick="switchTab('lobby',this)"><span>🛡️</span><span>Лобби</span></button>
+    <button class="nav-btn" onclick="switchTab('profile',this)"><span>👤</span><span>Профиль</span></button>
   </div>
-
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    // Инициализация данных пользователя из Telegram
+    const tg = window.Telegram.WebApp; tg.expand();
     const user = tg.initDataUnsafe?.user;
     if (user) {
-      const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
-      document.getElementById('user-name').innerText = fullName || user.username || 'Игрок';
-      document.getElementById('user-id').innerText = `TG ID: ${user.id}`;
-      document.getElementById('avatar-letter').innerText = (user.first_name || 'P')[0].toUpperCase();
+      document.getElementById('user-name').innerText = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || 'Игрок';
+      document.getElementById('user-id').innerText = 'TG ID: ' + user.id;
+      document.getElementById('avatar-letter').innerText = (user.first_name || 'P').toUpperCase();
     }
-
-    // Переключение вкладок
     function switchTab(tab, el) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('screen-' + tab).classList.add('active');
       if (el) el.classList.add('active');
     }
-
-    // Логика поиска матча
-    let searching = false;
-    let sec = 0;
-    let timerInt = null;
-
+    let searching = false, sec = 0, timerInt = null;
     function toggleSearch() {
-      const btn = document.getElementById('btn-find');
-      const spinner = document.getElementById('search-spinner');
-      const timer = document.getElementById('search-timer');
-      const status = document.getElementById('search-status');
-
+      const btn = document.getElementById('btn-find'), sp = document.getElementById('search-spinner'), tm = document.getElementById('search-timer'), st = document.getElementById('search-status');
       if (!searching) {
-        searching = true;
-        sec = 0;
-        btn.innerText = 'ОТМЕНИТЬ ПОИСК';
-        btn.className = 'btn btn-danger';
-        spinner.style.display = 'block';
-        timer.style.display = 'block';
-        status.innerText = 'Поиск игроков...';
-
+        searching = true; sec = 0; btn.innerText = 'ОТМЕНИТЬ ПОИСК'; btn.className = 'btn btn-danger'; sp.style.display = 'block'; tm.style.display = 'block'; st.innerText = 'Поиск игроков...';
         timerInt = setInterval(() => {
-          sec++;
-          const m = String(Math.floor(sec / 60)).padStart(2, '0');
-          const s = String(sec % 60).padStart(2, '0');
-          timer.innerText = `${m}:${s}`;
-
-          // Имитация нахождения матча через 4 секунды для теста
-          if (sec === 4) {
-            stopSearch();
-            openLobby();
-          }
+          sec++; tm.innerText = String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+          if (sec === 4) { stopSearch(); openLobby(); }
         }, 1000);
-      } else {
-        stopSearch();
-      }
+      } else { stopSearch(); }
     }
-
     function stopSearch() {
-      searching = false;
-      clearInterval(timerInt);
-      document.getElementById('btn-find').innerText = 'НАЙТИ МАТЧ';
-      document.getElementById('btn-find').className = 'btn btn-primary';
-      document.getElementById('search-spinner').style.display = 'none';
-      document.getElementById('search-timer').style.display = 'none';
+      searching = false; clearInterval(timerInt);
+      document.getElementById('btn-find').innerText = 'НАЙТИ МАТЧ'; document.getElementById('btn-find').className = 'btn btn-primary';
+      document.getElementById('search-spinner').style.display = 'none'; document.getElementById('search-timer').style.display = 'none';
       document.getElementById('search-status').innerText = 'Готов к матчу 5v5';
     }
-
-    // Логика лобби и банов карт
     const maps = ['Sandstone', 'Rust', 'Province', 'Zone 9', 'Sakura', 'Breeze', 'Dune'];
     let bannedCount = 0;
-
-
-function openLobby() {
-bannedCount = 0;
-document.getElementById('lobby-phase').innerText = 'Бан карт';
-document.getElementById('ban-hint').innerText = 'Нажмите на карту, чтобы забанить её:';
-const pool = document.getElementById('map-pool');
-pool.innerHTML = '';
-maps.forEach(map => {
-const div = document.createElement('div');
-div.className = 'map-item';
-div.innerText = map;
-div.onclick = () => banMap(div);
-pool.appendChild(div);
-});
-const list = document.getElementById('lobby-players');
-const myName = document.getElementById('user-name').innerText;
-const bots = ['Killa_SO2', 'SniperPro', 'Shadow99', 'Apex_GG', 'ViperX', 'Ghost_RU', 'Niko_Style', 'Zeus_Top', 'Faze_Kid'];
-list.innerHTML = <div class="player-row"><span>👑 ${myName} (Вы)</span><span style="color:var(--accent)">1000 ELO</span></div> +
-bots.map(b => <div class="player-row"><span>${b}</span><span style="color:var(--muted)">${950 + Math.floor(Math.random()*120)} ELO</span></div>).join('');
-switchTab('lobby', document.querySelectorAll('.nav-btn')[1]);
-}
-function banMap(el) {
-if (el.classList.contains('banned') || bannedCount >= maps.length - 1) return;
-el.classList.add('banned');
-bannedCount++;
-// Бот банит случайную доступную карту
-const available = Array.from(document.querySelectorAll('.map-item:not(.banned)'));
-if (available.length > 1) {
-const rand = available[Math.floor(Math.random() * available.length)];
-rand.classList.add('banned');
-bannedCount++;
-}
-const remaining = document.querySelectorAll('.map-item:not(.banned)');
-if (remaining.length === 1) {
-remaining[0].classList.add('picked');
-document.getElementById('lobby-phase').innerText = 'Карта выбрана!';
-document.getElementById('ban-hint').innerText = Матч пройдёт на карте: ${remaining[0].innerText};
-}
-}
-function leaveLobby() {
-switchTab('play', document.querySelectorAll('.nav-btn')[0]);
-}
+    function openLobby() {
+      bannedCount = 0; document.getElementById('lobby-phase').innerText = 'Бан карт'; document.getElementById('ban-hint').innerText = 'Нажмите на карту, чтобы забанить её:';
+      const pool = document.getElementById('map-pool'); pool.innerHTML = '';
+      maps.forEach(m => { const d = document.createElement('div'); d.className = 'map-item'; d.innerText = m; d.onclick = () => banMap(d); pool.appendChild(d); });
+      const list = document.getElementById('lobby-players'), myName = document.getElementById('user-name').innerText;
+      const bots = ['Killa_SO2', 'SniperPro', 'Shadow99', 'Apex_GG', 'ViperX', 'Ghost_RU', 'Niko_Style', 'Zeus_Top', 'Faze_Kid'];
+      list.innerHTML = '<div class="player-row"><span>👑 ' + myName + ' (Вы)</span><span style="color:var(--accent)">1000 ELO</span></div>' + bots.map(b => '<div class="player-row"><span>' + b + '</span><span style="color:var(--muted)">' + (950 + Math.floor(Math.random()*120)) + ' ELO</span></div>').join('');
+      switchTab('lobby', document.querySelectorAll('.nav-btn')[1]);
+    }
+    function banMap(el) {
+      if (el.classList.contains('banned') || bannedCount >= maps.length - 1) return;
+      el.classList.add('banned'); bannedCount++;
+      const avail = Array.from(document.querySelectorAll('.map-item:not(.banned)'));
+      if (avail.length > 1) { avail[Math.floor(Math.random() * avail.length)].classList.add('banned'); bannedCount++; }
+      const rem = document.querySelectorAll('.map-item:not(.banned)');
+    
