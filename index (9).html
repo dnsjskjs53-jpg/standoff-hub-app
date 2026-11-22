@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CF STANDOFFKNIFE - FACEIT LEAGUE</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+  :root {
+    --bg: #0c0d12;
+    --card: #151720;
+    --card-2: #1c1f2b;
+    --border: rgba(255,255,255,0.08);
+    --pink: #ff1e56;
+    --pink-dark: #c91240;
+    --gold: #f5b942;
+    --gold-bg: rgba(245, 185, 66, 0.12);
+    --green: #22c55e;
+    --text: #f4f5f8;
+    --muted: #8a8f9e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); padding-bottom: 84px; min-height: 100vh; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: #101118; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo-box {
+    width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--pink), #990d30);
+    display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px;
+  }
+  .brand-title { font-weight: 800; font-size: 14px; letter-spacing: 0.4px; }
+  .brand-sub { font-size: 10px; color: var(--muted); font-weight: 600; }
+
+  .mode-switch {
+    display: flex; background: var(--card-2); border-radius: 10px; padding: 3px; border: 1px solid var(--border);
+  }
+  .mode-btn {
+    border: none; background: transparent; color: var(--muted); padding: 6px 12px;
+    border-radius: 7px; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s;
+  }
+  .mode-btn.active { background: var(--pink); color: #fff; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+    background: var(--card-2); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.offline { background: #ef4444; box-shadow: none; }
+
+  .container { max-width: 540px; margin: 0 auto; padding: 14px; }
+
+  /* Auth Banner */
+  .auth-banner {
+    background: linear-gradient(90deg, rgba(255,30,86,0.18), rgba(245,185,66,0.12));
+    border: 1px solid rgba(255,30,86,0.4); border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; cursor: pointer;
+  }
+  .auth-banner span { font-size: 12px; font-weight: 700; color: #ffd1dc; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #24101a, #141620); border: 1px solid rgba(255,30,86,0.25);
+    border-radius: 18px; padding: 18px; margin-bottom: 14px; position: relative; overflow: hidden;
+  }
+  .hero h1 { font-size: 24px; font-weight: 900; margin-bottom: 4px; }
+  .hero p { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .league-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .league-btn {
+    padding: 11px; border-radius: 12px; border: 1px solid var(--border); font-weight: 800; font-size: 11px;
+    text-align: center; background: var(--card-2); color: var(--muted);
+  }
+  .league-btn.active { background: var(--pink); color: #fff; border-color: var(--pink); }
+
+  /* Lobby Cards */
+  .lobby-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 14px; margin-bottom: 12px; transition: 0.2s;
+  }
+  .lobby-card.active-lobby { border-color: var(--pink); box-shadow: 0 0 18px rgba(255,30,86,0.15); }
+  .lobby-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .lobby-title { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .lobby-count { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+  .btn {
+    border: none; border-radius: 10px; padding: 8px 16px; font-weight: 800; font-size: 12px;
+    cursor: pointer; transition: 0.15s;
+  }
+  .btn-pink { background: var(--pink); color: #fff; }
+  .btn-pink:active { transform: scale(0.97); }
+  .btn-dark { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: rgba(239,68,68,0.16); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+  .players-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .player-chip {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 6px 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;
+  }
+  .player-chip.me { border-color: var(--pink); background: rgba(255,30,86,0.12); }
+  .elo-badge { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 6px; font-size: 10px; color: var(--gold); }
+
+  /* Match Screen Overlay */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Ready Modal */
+  .ready-box {
+    background: var(--card); border: 1px solid rgba(255,30,86,0.35); border-radius: 20px;
+    padding: 22px 16px; text-align: center; margin-bottom: 14px;
+  }
+  .timer-ring {
+    width: 78px; height: 78px; border-radius: 50%; border: 4px solid var(--pink);
+    display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900;
+    margin: 0 auto 14px; box-shadow: 0 0 20px rgba(255,30,86,0.3);
+  }
+  .cap-badge {
+    display: inline-block; background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold);
+    padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; margin: 6px 0 14px;
+  }
+  .ready-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .r-dot {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--card-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--muted);
+  }
+  .r-dot.ok { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.12); }
+
+  /* Map Ban */
+  .ban-header {
+    background: rgba(255,30,86,0.14); border: 1px solid rgba(255,30,86,0.35); border-radius: 14px;
+    padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .ban-timer {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--pink); color: var(--pink);
+    padding: 4px 10px; border-radius: 12px; font-weight: 900; font-size: 13px;
+  }
+  .map-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .map-item.banned { opacity: 0.45; background: #101116; }
+  .map-info { display: flex; align-items: center; gap: 12px; }
+  .map-thumb {
+    width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 11px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+  .map-name { font-weight: 800; font-size: 14px; }
+  .map-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .map-item.banned .map-name { text-decoration: line-through; }
+  .map-item.banned .map-sub { color: #f87171; font-weight: 700; }
+
+  /* Rounds Vote */
+  .vote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .vote-card {
+    background: var(--card-2); border: 2px solid var(--border); border-radius: 14px;
+    padding: 14px 8px; text-align: center; cursor: pointer; transition: 0.2s;
+  }
+  .vote-card.selected { border-color: var(--pink); background: rgba(255,30,86,0.14); }
+  .vote-num { font-size: 22px; font-weight: 900; }
+  .vote-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .vote-count { margin-top: 6px; font-size: 11px; font-weight: 800; color: var(--gold); }
+
+  /* Golden Host Card */
+  .gold-host-card {
+    background: linear-gradient(135deg, rgba(245,185,66,0.18), rgba(20,22,32,0.95));
+    border: 2px solid var(--gold); border-radius: 18px; padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 0 25px rgba(245,185,66,0.2); text-align: center;
+  }
+  .gold-title { color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+  .gold-nick { font-size: 20px; font-weight: 900; margin: 6px 0 2px; }
+  .gold-id { font-size: 14px; color: #fde68a; font-weight: 700; margin-bottom: 12px; }
+  .btn-gold {
+    background: linear-gradient(135deg, #f5b942, #d97706); color: #111; font-weight: 900;
+    border: none; border-radius: 10px; padding: 10px 18px; font-size: 12px; cursor: pointer; width: 100%;
+  }
+
+  /* Teams Table */
+  .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .team-col { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px; }
+  .team-head { font-size: 12px; font-weight: 800; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .t-row { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+  .t-row:last-child { border-bottom: none; }
+  .t-nick { font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+  .t-stats { font-size: 10px; color: var(--muted); }
+
+  /* Chat */
+  .chat-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
+  .chat-messages {
+    height: 190px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+    padding: 6px 2px; margin-bottom: 10px;
+  }
+  .msg { background: var(--card-2); padding: 8px 10px; border-radius: 10px; font-size: 12px; max-width: 88%; }
+  .msg.mine { align-self: flex-end; background: rgba(255,30,86,0.2); border: 1px solid rgba(255,30,86,0.35); }
+  .msg-author { font-size: 10px; font-weight: 800; color: var(--gold); margin-bottom: 2px; }
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input {
+    flex: 1; background: var(--card-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; color: #fff; font-size: 13px; outline: none;
+  }
+  .chat-send {
+    background: var(--pink); color: #fff; border: none; border-radius: 12px;
+    width: 44px; font-weight: 900; font-size: 16px; cursor: pointer;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; background: #101118; border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 0; z-index: 60;
+  }
+  .nav-item {
+    background: none; border: none; color: var(--muted); font-size: 10px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
+  }
+  .nav-item.active { color: var(--pink); }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none;
+    align-items: center; justify-content: center; padding: 16px; z-index: 100;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+    padding: 18px; width: 100%; max-width: 380px;
+  }
+  .modal h3 { font-size: 17px; margin-bottom: 8px; }
+  .input-field {
+    width: 100%; background: var(--card-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; color: #fff; font-size: 13px; margin-bottom: 10px; outline: none;
+  }
+  .toast {
+    position: fixed; top: 68px; left: 50%; transform: translateX(-50%); background: #222634;
+    border: 1px solid var(--gold); color: #fff; padding: 8px 16px; border-radius: 12px;
+    font-size: 12px; font-weight: 700; z-index: 200; display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">Скопировано!</div>
+
+<header class="header">
+  <div class="brand">
+    <div class="logo-box">CF</div>
+    <div>
+      <div class="brand-title">CF STANDOFFKNIFE</div>
+      <div class="brand-sub">FACEIT LEAGUE • LIVE</div>
+    </div>
+  </div>
+  <div class="mode-switch">
+    <button class="mode-btn active" id="btnMode5" onclick="setMode('5x5')">5x5</button>
+    <button class="mode-btn" id="btnMode1" onclick="setMode('1x1')">1x1</button>
+  </div>
+  <div class="status-pill" title="Синхронизация в реальном времени">
+    <span class="dot offline" id="netDot"></span>
+    <span id="netText">Сеть...</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TAB: PLAY -->
+  <div id="tabPlay" class="screen active">
+    <div class="auth-banner" id="authBanner" onclick="openAuthModal()">
+      <span>⚠ ПРИВЯЖИТЕ НИК И ID (ОДИН РАЗ) ›</span>
+      <span style="color:var(--gold)">ПРОФИЛЬ</span>
+    </div>
+
+    <div class="hero">
+      <h1 id="heroTitle">ИГРАТЬ • 5x5</h1>
+      <p id="heroSub">В очередях сейчас: <b id="totalOnline">0</b> • Обновление каждую 1 сек</p>
+      <div class="league-row">
+        <div class="league-btn active">DEFAULT • MOBILE</div>
+        <div class="league-btn">🔒 QUALIFICATION</div>
+      </div>
+    </div>
+
+    <div id="lobbiesContainer"></div>
+  </div>
+
+  <!-- TAB: MATCH ROOM -->
+  <div id="tabMatch" class="screen">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span style="font-size:12px; font-weight:800; color:var(--muted);" id="matchHeaderLabel">ЛОББИ МАТЧА</span>
+      <button class="btn btn-danger" onclick="leaveCurrentLobby()">Покинуть матч</button>
+    </div>
+
+    <!-- PHASE 1: READY CHECK -->
+    <div id="phaseReady" class="ready-box">
+      <div class="timer-ring" id="readyTimer">30</div>
+      <div style="font-size:18px; font-weight:900;">МАТЧ НАЙДЕН</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:4px;" id="readyTeamLabel">DEFAULT • Ожидание подтверждения</div>
+      <div class="cap-badge" id="myCapBadge" style="display:none;">👑 ВЫ КАПИТАН</div>
+      <div class="ready-dots" id="readyDots"></div>
+      <div style="font-size:12px; font-weight:700; margin-bottom:14px;" id="readyCounter">0 / 2 готовы</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button class="btn btn-dark" onclick="leaveCurrentLobby()">ОТКЛОНИТЬ</button>
+        <button class="btn btn-pink" id="btnAcceptMatch" onclick="acceptMatch()">ПРИНЯТЬ</button>
+      </div>
+    </div>
+
+    <!-- PHASE 2: MAP BAN -->
+    <div id="phaseBan" style="display:none;">
+      <div class="ban-header">
+        <div>
+          <div style="font-weight:800; font-size:13px;" id="banTurnTitle">Ход капитана...</div>
+          <div style="font-size:11px; color:var(--muted);" id="banTurnSub">Пикают и банят только 2 случайных капитана</div>
+        </div>
+        <div class="ban-timer" id="banTimerDisplay">0:25</div>
+      </div>
+      <div id="mapsList"></div>
+    </div>
+
+    <!-- PHASE 3: ROUNDS VOTE -->
+    <div id="phaseVote" style="display:none;">
+      <div class="ready-box" style="text-align:left;">
+        <div style="font-size:12px; color:var(--gold); font-weight:800;">КАРТА МАТЧА: <span id="chosenMapName">Sandstone</span></div>
+        <div style="font-size:16px; font-weight:900; margin-top:4px;">Голосование за количество раундов</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px;">Голосуют все игроки лобби • Осталось: <b id="voteTimerDisplay">15</b> сек</div>
+        <div class="vote-grid">
+          <div class="vote-card" id="vCard10" onclick="castRoundVote(10)">
+            <div class="vote-num">10</div>
+            <div class="vote-label">Быстрый</div>
+            <div class="vote-count" id="vCount10">0 голосов</div>
+          </div>
+          <div class="vote-card" id="vCard13" onclick="castRoundVote(13)">
+            <div class="vote-num">13</div>
+            <div class="vote-label">Стандарт</div>
+            <div class="vote-count" id="vCount13">0 голосов</div>
+          </div>
+          <div class="vote-card" id="vCard16" onclick="castRoundVote(16)">
+            <div class="vote-num">16</div>
+            <div class="vote-label">Полный</div>
+            <div class="vote-count" id="vCount16">0 голосов</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4: ACTIVE MATCH LOBBY -->
+    <div id="phaseActive" style="display:none;">
+      <div class="gold-host-card">
+        <div class="gold-title">👑 ХОСТ ЛОББИ (СЛУЧАЙНЫЙ КАПИТАН)</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px;">
+          Карта: <b style="color:#fff" id="finalMap">Sandstone</b> • Раундов: <b style="color:#fff" id="finalRounds">13</b>
+        </div>
+        <div class="gold-nick" id="hostNick">Игрок</div>
+        <div class="gold-id">ID В ИГРЕ: <span id="hostGameId">0000000</span></div>
+        <button class="btn-gold" onclick="copyHostId()">📋 СКОПИРОВАТЬ ID КАПИТАНА</button>
+      </div>
+    </div>
+
+    <!-- TEAMS & CHAT (Always visible in match) -->
+    <div class="teams-grid" id="teamsGrid">
+      <div class="team-col">
+        <div class="team-head" style="color:#60a5fa;">🛡 Команда А • Спецназ</div>
+        <div id="teamAList"></div>
+      </div>
+      <div class="team-col">
+        <div class="team-head" style="color:#fb923c;">🔥 Команда Б • Террористы</div>
+        <div id="teamBList"></div>
+      </div>
+    </div>
+
+    <div class="chat-box">
+      <div style="font-size:12px; font-weight:800; margin-bottom:6px;">💬 Чат лобби (видят все игроки)</div>
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center; color:var(--muted); font-size:11px; margin-top:60px;">Пока тихо. Напишите сообщение в чат...</div>
+      </div>
+      <form class="chat-input-row" onsubmit="sendChatMessage(event)">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Сообщение..." autocomplete="off">
+        <button type="submit" class="chat-send">➤</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB: PROFILE -->
+  <div id="tabProfile" class="screen">
+    <div class="lobby-card">
+      <div style="font-size:12px; color:var(--muted); font-weight:700;">ПРОФИЛЬ ИГРОКА</div>
+      <div style="font-size:20px; font-weight:900; margin:6px 0;" id="profNick">Гость</div>
+      <div style="font-size:13px; color:var(--gold); font-weight:700; margin-bottom:12px;" id="profId">ID: не привязан</div>
+      <div id="profLockNote" style="font-size:11px; color:var(--muted); background:var(--card-2); padding:10px; border-radius:10px;">
+        Привязка выполняется 1 раз без возможности повторного изменения.
+      </div>
+      <button class="btn btn-pink" id="profBindBtn" style="margin-top:12px; width:100%;" onclick="openAuthModal()">Привязать профиль</button>
+    </div>
+  </div>
+
+  <!-- TAB: TOP -->
+  <div id="tabTop" class="screen">
+    <div class="lobby-card">
+      <div style="font-weight:900; font-size:16px; margin-bottom:10px;">🏆 Топ игроков сезона</div>
+      <div class="t-row"><div class="t-nick"><span>1. ML_MIHEI</span><span style="color:var(--gold)">1240 ELO</span></div></div>
+      <div class="t-row"><div class="t-nick"><span>2. LowXI1te</span><span style="color:var(--gold)">1180 ELO</span></div></div>
+      <div class="t-row"><div class="t-nick"><span>3. Kolder</span><span style="color:var(--gold)">1120 ELO</span></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="navPlay" onclick="switchTab('Play')"><span>▶</span><span>ИГРАТЬ</span></button>
+  <button class="nav-item" id="navMatch" onclick="switchTab('Match')"><span>⚔</span><span>МАТЧ</span></button>
+  <button class="nav-item" id="navProfile" onclick="switchTab('Profile')"><span>👤</span><span>ПРОФИЛЬ</span></button>
+  <button class="nav-item" id="navTop" onclick="switchTab('Top')"><span>🏆</span><span>ТОП</span></button>
+</nav>
+
+<!-- ONE-TIME AUTH MODAL -->
+<div class="modal-backdrop" id="authModal">
+  <div class="modal">
+    <h3>🛡 Привязка профиля (1 раз)</h3>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">
+      Внимание: никнейм и ID из StandoffKnife сохраняются <b>один раз навсегда</b> и не подлежат изменению.
+    </p>
+    <input type="text" class="input-field" id="inpNick" placeholder="Ваш никнейм (например: Kolder)" maxlength="20">
+    <input type="text" class="input-field" id="inpId" placeholder="Ваш игровой ID (цифры)" maxlength="15">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-dark" style="flex:1;" onclick="closeAuthModal()">Отмена</button>
+      <button class="btn btn-pink" style="flex:1;" onclick="saveOneTimeProfile()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MAPS_POOL = [
+  { id: 'Sandstone', color: '#b45309' },
+  { id: 'Province',  color: '#047857' },
+  { id: 'Breeze',    color: '#0369a1' },
+  { id: 'Dune',      color: '#c2410c' },
+  { id: 'Rust',      color: '#991b1b' },
+  { id: 'Hanami',    color: '#be185d' },
+  { id: 'Prison',    color: '#4b5563' }
+];
+
+// Unique session ID per browser tab/device
+const MY_UID = localStorage.getItem('cf_uid') || ('u_' + Math.random().toString(36).slice(2, 10));
+localStorage.setItem('cf_uid', MY_UID);
+
+// One-time bound profile
+let myProfile = JSON.parse(localStorage.getItem('cf_bound_profile') || 'null');
+
+let currentMode = '5x5';
+let myLobbyId = null;
+
+// Shared state across devices
+let lobbies = {};
+function getEmptyLobby(id, mode) {
+  return {
+    id, mode,
+    players: {}, // uid -> { uid, nick, gameId, elo, lastSeen, ready }
+    phase: 'waiting', // waiting | ready | ban | vote | active
+    phaseStartedAt: 0,
+    turnStartedAt: 0,
+    capA: null,
+    capB: null,
+    turnCap: null,
+    bannedMaps: {}, // mapId -> 'Команда А' | 'Команда Б'
+    chosenMap: null,
+    votes: {}, // uid -> 10 | 13 | 16
+    finalRounds: 13,
+    hostUid: null,
+    chat: [] // { id, uid, nick, text, ts }
+  };
+}
+
+['5x5_1','5x5_2','5x5_3','5x5_4','1x1_1','1x1_2','1x1_3','1x1_4'].forEach(k => {
+  lobbies[k] = getEmptyLobby(k, k.startsWith('1x1') ? '1x1' : '5x5');
+});
+
+// Real-time Pub/Sub sync via public WSS MQTT broker (zero config needed)
+const ROOM_TOPIC = 'cf_standoffknife/dnsjskjs53/live_v3';
+let client = null;
+let isConnected = false;
+
+function initNetwork() {
+  try {
+    client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+      clientId: 'cf_' + MY_UID + '_' + Math.floor(Math.random()*9999),
+      clean: true,
+      reconnectPeriod: 2000
+    });
+
+    client.on('connect', () => {
+      isConnected = true;
+      document.getElementById('netDot').classList.remove('offline');
+      document.getElementById('netText').innerText = 'Онлайн';
+      client.subscribe(ROOM_TOPIC);
+      publishEvent({ type: 'SYNC_REQ', sender: MY_UID });
+    });
+
+    client.on('offline', () => {
+      isConnected = false;
+      document.getElementById('netDot').classList.add('offline');
+      document.getElementById('netText').innerText = 'Реконнект';
+    });
+
+    client.on('message', (topic, message) => {
+      try {
+        const ev = JSON.parse(message.toString());
+        handleRemoteEvent(ev);
+      } catch (e) {}
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function publishEvent(ev) {
+  ev.ts = Date.now();
+  if (client && isConnected) {
+    client.publish(ROOM_TOPIC, JSON.stringify(ev));
+  }
+  // Also apply locally immediately
+  handleRemoteEvent(ev, true);
+}
+
+function handleRemoteEvent(ev, isLocal = false) {
+  if (!ev || !ev.type) return;
+
+  if (ev.type === 'SYNC_REQ' && !isLocal && ev.sender !== MY_UID) {
+    // Share active lobbies with newcomer
+    Object.values(lobbies).forEach(lb => {
+      if (Object.keys(lb.players).length > 0) {
+        client.publish(ROOM_TOPIC, JSON.stringify({ type: 'LOBBY_STATE', lobby: lb }));
+      }
+    });
+    return;
+  }
+
+  if (ev.type === 'LOBBY_STATE' && ev.lobby) {
+    const remote = ev.lobby;
+    const local = lobbies[remote.id];
+    if (!local) return;
+    // Merge players by latest timestamp
+    Object.values(remote.players || {}).forEach(rp => {
+      if (!local.players[rp.uid] || rp.lastSeen > local.players[rp.uid].lastSeen) {
+        local.players[rp.uid] = rp;
+      }
+    });
+    // Adopt progressed match state
+    const phaseRank = { waiting: 0, ready: 1, ban: 2, vote: 3, active: 4 };
+    if ((phaseRank[remote.phase] || 0) >= (phaseRank[local.phase] || 0)) {
+      if (remote.phase !== 'waiting') {
+        local.phase = remote.phase;
+        local.phaseStartedAt = remote.phaseStartedAt;
+        local.turnStartedAt = remote.turnStartedAt;
+        local.capA = remote.capA;
+        local.capB = remote.capB;
+        local.turnCap = remote.turnCap;
+        local.bannedMaps = remote.bannedMaps || {};
+        local.chosenMap = remote.chosenMap;
+        local.votes = remote.votes || {};
+        local.finalRounds = remote.finalRounds;
+        local.hostUid = remote.hostUid;
+      }
+    }
+    // Merge chat
+    (remote.chat || []).forEach(m => {
+      if (!local.chat.some(x => x.id === m.id)) local.chat.push(m);
+    });
+    local.chat.sort((a,b) => a.ts - b.ts);
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'HEARTBEAT') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb) return;
+    lb.players[ev.player.uid] = ev.player;
+    checkLobbyStart(lb);
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'LEAVE') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb) return;
+    delete lb.players[ev.uid];
+    if (Object.keys(lb.players).length === 0) {
+      lobbies[ev.lobbyId] = getEmptyLobby(ev.lobbyId, lb.mode);
+    }
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'ACCEPT') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb || !lb.players[ev.uid]) return;
+    lb.players[ev.uid].ready = true;
+    const pList = Object.values(lb.players);
+    if (pList.length >= getMaxPlayers(lb.mode) && pList.every(p => p.ready)) {
+      startBanPhase(lb);
+    }
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'BAN_MAP') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb || lb.phase !== 'ban') return;
+    if (lb.bannedMaps[ev.mapId]) return;
+    lb.bannedMaps[ev.mapId] = ev.teamName;
+    const remaining = MAPS_POOL.filter(m => !lb.bannedMaps[m.id]);
+    if (remaining.length <= 1) {
+      lb.chosenMap = remaining[0] ? remaining[0].id : 'Sandstone';
+      lb.phase = 'vote';
+      lb.phaseStartedAt = Date.now();
+    } else {
+      lb.turnCap = (lb.turnCap === lb.capA) ? lb.capB : lb.capA;
+      lb.turnStartedAt = Date.now();
+    }
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'VOTE_ROUNDS') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb || lb.phase !== 'vote') return;
+    lb.votes[ev.uid] = ev.rounds;
+    const pCount = Object.keys(lb.players).length;
+    if (Object.keys(lb.votes).length >= pCount && pCount > 0) {
+      finishVotePhase(lb);
+    }
+    renderAll();
+    return;
+  }
+
+  if (ev.type === 'CHAT') {
+    const lb = lobbies[ev.lobbyId];
+    if (!lb) return;
+    if (!lb.chat.some(m => m.id === ev.msg.id)) {
+      lb.chat.push(ev.msg);
+      if (lb.chat.length > 60) lb.chat.shift();
+    }
+    renderAll();
+  }
+}
+
+function getMaxPlayers(mode) {
+  return mode === '1x1' ? 2 : 10;
+}
+
+function getEffectivePlayer() {
+  if (myProfile) {
+    return { uid: MY_UID, nick: myProfile.nick, gameId: myProfile.gameId, elo: 1000 };
+  }
+  // Guest allowed for 1x1 without ID
+  const shortCode = MY_UID.slice(-4).toUpperCase();
+  return { uid: MY_UID, nick: 'Player_' + shortCode, gameId: 'Без ID (1x1)', elo: 1000 };
+}
+
+function checkLobbyStart(lb) {
+  const maxP = getMaxPlayers(lb.mode);
+  const pList = Object.values(lb.players);
+  if (lb.phase === 'waiting' && pList.length >= maxP) {
+    // Sort deterministically so all clients pick same 2 random captains from seed
+    pList.sort((a,b) => a.uid.localeCompare(b.uid));
+    const seed = pList.reduce((acc, p) => acc + p.uid.charCodeAt(2), 0);
+    const idxA = seed % pList.length;
+    let idxB = (seed + 1) % pList.length;
+    if (idxB === idxA && pList.length > 1) idxB = (idxA + 1) % pList.length;
+
+    lb.capA = pList[idxA].uid;
+    lb.capB = pList[idxB].uid;
+    lb.turnCap = lb.capA;
+    lb.phase = 'ready';
+    lb.phaseStartedAt = Date.now();
+    pList.forEach(p => p.ready = false);
+
+    if (myLobbyId === lb.id) switchTab('Match');
+  }
+}
+
+function startBanPhase(lb) {
+  lb.phase = 'ban';
+  lb.turnStartedAt = Date.now();
+  lb.bannedMaps = {};
+}
+
+function finishVotePhase(lb) {
+  const tally = { 10: 0, 13: 0, 16: 0 };
+  Object.values(lb.votes).forEach(v => { if (tally[v] !== undefined) tally[v]++; });
+  let best = 13;
+  let maxV = -1;
+  [10, 13, 16].forEach(r => {
+    if (tally[r] > maxV) { maxV = tally[r]; best = r; }
+  });
+  lb.finalRounds = best;
+  // Pick random of the 2 captains as host
+  const seed = (lb.capA || '').charCodeAt(2) + Object.keys(lb.votes).length;
+  lb.hostUid = (seed % 2 === 0) ? lb.capA : lb.capB;
+  lb.phase = 'active';
+}
+
+// 1-SECOND HEARTBEAT & TIMEOUT ENGINE
+setInterval(() => {
+  const now = Date.now();
+
+  // 1. Send my heartbeat every 1 second if in a lobby
+  if (myLobbyId && lobbies[myLobbyId]) {
+    const me = getEffectivePlayer();
+    const existing = lobbies[myLobbyId].players[MY_UID];
+    me.lastSeen = now;
+    me.ready = existing ? !!existing.ready : false;
+    publishEvent({ type: 'HEARTBEAT', lobbyId: myLobbyId, player: me });
+  }
+
+  // 2. Purge disconnected players (> 3.5 sec without heartbeat) across all lobbies
+  Object.values(lobbies).forEach(lb => {
+    let changed = false;
+    Object.values(lb.players).forEach(p => {
+      if (now - p.lastSeen > 3500) {
+        delete lb.players[p.uid];
+        changed = true;
+      }
+    });
+    if (Object.keys(lb.players).length === 0 && lb.phase !== 'waiting') {
+      lobbies[lb.id] = getEmptyLobby(lb.id, lb.mode);
+      changed = true;
+    }
+
+    // 3. Handle phase timers (25s ban turn, 30s ready, 15s vote)
+    if (lb.phase === 'ready' && lb.phaseStartedAt > 0) {
+      const left = Math.max(0, 30 - Math.floor((now - lb.phaseStartedAt)/1000));
+      if (myLobbyId === lb.id) document.getElementById('readyTimer').innerText = left;
+      if (left === 0 && Object.keys(lb.players).length > 0) {
+        // Auto-start ban for active players
+        startBanPhase(lb);
+        changed = true;
+      }
+    }
+
+    if (lb.phase === 'ban' && lb.turnStartedAt > 0) {
+      const left = Math.max(0, 25 - Math.floor((now - lb.turnStartedAt)/1000));
+      if (myLobbyId === lb.id) {
+        document.getElementById('banTimerDisplay').innerText = '0:' + String(left).padStart(2, '0');
+      }
+      // Auto-ban if captain runs out of 25s
+      if (left === 0 && lb.turnCap === MY_UID) {
+        const avail = MAPS_POOL.filter(m => !lb.bannedMaps[m.id]);
+        if (avail.length > 1) {
+          const teamName = (lb.turnCap === lb.capA) ? 'Команда А' : 'Команда Б';
+          publishEvent({ type: 'BAN_MAP', lobbyId: lb.id, mapId: avail[0].id, teamName });
+        }
+      }
+    }
+
+    if (lb.phase === 'vote' && lb.phaseStartedAt > 0) {
+      const left = Math.max(0, 15 - Math.floor((now - lb.phaseStartedAt)/1000));
+      if (myLobbyId === lb.id) document.getElementById('voteTimerDisplay').innerText = left;
+      if (left === 0) {
+        finishVotePhase(lb);
+        changed = true;
+      }
+    }
+
+    if (changed) renderAll();
+  });
+}, 1000);
+
+// Notify immediately on tab close / refresh
+window.addEventListener('beforeunload', () => {
+  if (myLobbyId && client && isConnected) {
+    client.publish(ROOM_TOPIC, JSON.stringify({ type: 'LEAVE', lobbyId: myLobbyId, uid: MY_UID }));
+  }
+});
+
+// UI Actions
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btnMode5').classList.toggle('active', mode === '5x5');
+  document.getElementById('btnMode1').classList.toggle('active', mode === '1x1');
+  document.getElementById('heroTitle').innerText = 'ИГРАТЬ • ' + mode;
+  updateAuthUI();
+  renderAll();
+}
+
+function joinLobby(lobbyId) {
+  const lb = lobbies[lobbyId];
+  if (!lb) return;
+  // Require ID only for 5x5; 1x1 works without ID!
+  if (lb.mode === '5x5' && !myProfile) {
+    showToast('Для 5x5 привяжите ник и ID (1 раз)');
+    openAuthModal();
+    return;
+  }
+  if (myLobbyId && myLobbyId !== lobbyId) {
+    leaveCurrentLobby();
+  }
+  myLobbyId = lobbyId;
+  const me = getEffectivePlayer();
+  me.lastSeen = Date.now();
+  me.ready = false;
+  publishEvent({ type: 'HEARTBEAT', lobbyId, player: me });
+  showToast('Вы вошли в ' + lobbyId.replace('_', ' #'));
+  switchTab('Match');
+}
+
+function leaveCurrentLobby() {
+  if (!myLobbyId) return;
+  const old = myLobbyId;
+  myLobbyId = null;
+  publishEvent({ type: 'LEAVE', lobbyId: old, uid: MY_UID });
+  switchTab('Play');
+}
+
+function acceptMatch() {
+  if (!myLobbyId) return;
+  publishEvent({ type: 'ACCEPT', lobbyId: myLobbyId, uid: MY_UID });
+}
+
+function banMap(mapId) {
+  if (!myLobbyId) return;
+  const lb = lobbies[myLobbyId];
+  if (!lb || lb.phase !== 'ban') return;
+  if (lb.turnCap !== MY_UID) {
+    showToast('Сейчас ход другого капитана!');
+    return;
+  }
+  const teamName = (MY_UID === lb.capA) ? 'Команда А' : 'Команда Б';
+  publishEvent({ type: 'BAN_MAP', lobbyId: lb.id, mapId, teamName });
+}
+
+function castRoundVote(rounds) {
+  if (!myLobbyId) return;
+  const lb = lobbies[myLobbyId];
+  if (!lb || lb.phase !== 'vote') return;
+  publishEvent({ type: 'VOTE_ROUNDS', lobbyId: lb.id, uid: MY_UID, rounds });
+}
+
+function sendChatMessage(e) {
+  e.preventDefault();
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text || !myLobbyId) return;
+  const me = getEffectivePlayer();
+  const msg = {
+    id: MY_UID + '_' + Date.now(),
+    uid: MY_UID,
+    nick: me.nick,
+    text,
+    ts: Date.now()
+  };
+  inp.value = '';
+  publishEvent({ type: 'CHAT', lobbyId: myLobbyId, msg });
+}
+
+function copyHostId() {
+  const idText = document.getElementById('hostGameId').innerText;
+  navigator.clipboard?.writeText(idText);
+  showToast('ID капитана скопирован: ' + idText);
+}
+
+// One-Time Profile Binding
+function openAuthModal() {
+  if (myProfile) {
+    showToast('Профиль уже привязан навсегда');
+    return;
+  }
+  document.getElementById('authModal').classList.add('open');
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.remove('open');
+}
+function saveOneTimeProfile() {
+  if (myProfile) return;
+  const nick = document.getElementById('inpNick').value.trim();
+  const gameId = document.getElementById('inpId').value.trim();
+  if (nick.length < 2 || !/^\d{4,15}$/.test(gameId)) {
+    showToast('Введите корректный ник и цифровой ID!');
+    return;
+  }
+  myProfile = { nick, gameId };
+  localStorage.setItem('cf_bound_profile', JSON.stringify(myProfile));
+  closeAuthModal();
+  updateAuthUI();
+  showToast('Профиль привязан навсегда!');
+}
+
+function updateAuthUI() {
+  const banner = document.getElementById('authBanner');
+  if (myProfile) {
+    banner.style.display = 'none';
+    document.getElementById('profNick').innerText = myProfile.nick;
+    document.getElementById('profId').innerText = 'ID: ' + myProfile.gameId + ' (Зафиксирован)';
+    document.getElementById('profBindBtn').style.display = 'none';
+  } else {
+    banner.style.display = (currentMode === '1x1') ? 'none' : 'flex';
+  }
+}
+
+function switchTab(tab) {
+  ['Play','Match','Profile','Top'].forEach(t => {
+    document.getElementById('tab' + t).classList.toggle('active', t === tab);
+    document.getElementById('nav' + t).classList.toggle('active', t === tab);
+  });
+  renderAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg;
+  t.style.display = 'block';
+  clearTimeout(window._tTimer);
+  window._tTimer = setTimeout(() => { t.style.display = 'none'; }, 2400);
+}
+
+function renderAll() {
+  // Total online
+  let onlineCount = 0;
+  Object.values(lobbies).forEach(lb => onlineCount += Object.keys(lb.players).length);
+  document.getElementById('totalOnline').innerText = onlineCount;
+
+  // Render lobbies list for current mode
+  const container = document.getElementById('lobbiesContainer');
+  container.innerHTML = '';
+  const maxP = getMaxPlayers(currentMode);
+
+  for (let i = 1; i <= 4; i++) {
+    const id = currentMode + '_' + i;
+    const lb = lobbies[id];
+    const pList = Object.values(lb.players);
+    const isMine = (myLobbyId === id);
+
+    const card = document.createElement('div');
+    card.className = 'lobby-card' + (isMine ? ' active-lobby' : '');
+
+    let btnHtml = `<button class="btn btn-pink" onclick="joinLobby('${id}')">Войти</button>`;
+    if (isMine) {
+      btnHtml = `<button class="btn btn-dark" onclick="switchTab('Match')">Открыть</button>`;
+    } else if (pList.length >= maxP) {
+      btnHtml = `<button class="btn btn-dark" disabled>Заполнено</button>`;
+    }
+
+    const chips = pList.length === 0
+      ? `<div style="font-size:12px; color:var(--muted);">Пока никого — будь первым</div>`
+      : `<div class="players-list">` + pList.map(p => `
+          <div class="player-chip ${p.uid === MY_UID ? 'me' : ''}">
+            <span>${p.nick}</span>
+            <span class="elo-badge">${p.elo}</span>
+          </div>`).join('') + `</div>`;
+
+    card.innerHTML = `
+      <div class="lobby-top">
+        <div class="lobby-title">ЛОББИ #${i} <span style="font-size:11px; color:var(--pink)">${currentMode}</span></div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="lobby-count">${pList.length}/${maxP}</span>
+          ${btnHtml}
+        </div>
+      </div>
+      ${chips}
+    `;
+    container.appendChild(card);
+  }
+
+  // Render Match Tab
+  const activeLb = myLobbyId ? lobbies[myLobbyId] : null;
+  if (!activeLb) {
+    document.getElementById('matchHeaderLabel').innerText = 'ВЫ НЕ В ЛОББИ';
+    ['phaseReady','phaseBan','phaseVote','phaseActive'].forEach(p => {
+      document.getElementById(p).style.display = 'none';
+    });
+    return;
+  }
+
+  document.getElementById('matchHeaderLabel').innerText = 'ЛОББИ #' + activeLb.id.split('_')[1] + ' • ' + activeLb.mode;
+
+  // Waiting state (1/2 or 3/10)
+  if (activeLb.phase === 'waiting') {
+    document.getElementById('phaseReady').style.display = 'block';
+    document.getElementById('phaseBan').style.display = 'none';
+    document.getElementById('phaseVote').style.display = 'none';
+    document.getElementById('phaseActive').style.display = 'none';
+
+    const pList = Object.values(activeLb.players);
+    const maxSlots = getMaxPlayers(activeLb.mode);
+    document.getElementById('readyTimer').innerText = '⏳';
+    document.getElementById('readyTeamLabel').innerText = `Ожидание игроков (${pList.length}/${maxSlots})...`;
+    document.getElementById('myCapBadge').style.display = 'none';
+    document.getElementById('btnAcceptMatch').style.display = 'none';
+    document.getElementById('readyCounter').innerText = `${pList.length} / ${maxSlots} в комнате`;
+
+    let dots = '';
+    for (let i = 0; i < maxSlots; i++) {
+      dots += `<div class="r-dot ${pList[i] ? 'ok' : ''}">${pList[i] ? '✓' : '👤'}</div>`;
+    }
+    document.getElementById('readyDots').innerHTML = dots;
+  }
+
+  // Ready check state
+  if (activeLb.phase === 'ready') {
+    document.getElementById('phaseReady').style.display = 'block';
+    document.getElementById('phaseBan').style.display = 'none';
+    document.getElementById('phaseVote').style.display = 'none';
+    document.getElementById('phaseActive').style.display = 'none';
+
+    const pList = Object.values(activeLb.players);
+    const maxSlots = getMaxPlayers(activeLb.mode);
+    const isCap = (MY_UID === activeLb.capA || MY_UID === activeLb.capB);
+    document.getElementById('myCapBadge').style.display = isCap ? 'inline-block' : 'none';
+    document.getElementById('readyTeamLabel').innerText = (MY_UID === activeLb.capA) ? 'DEFAULT • Команда А' : 'DEFAULT • Команда Б';
+
+    const readyCount = pList.filter(p => p.ready).length;
+    document.getElementById('readyCounter').innerText = `${readyCount} / ${pList.length} готовы`;
+    const btnAcc = document.getElementById('btnAcceptMatch');
+    btnAcc.style.display = 'block';
+    btnAcc.innerText = activeLb.players[MY_UID]?.ready ? 'ВЫ ГОТОВЫ ✓' : 'ПРИНЯТЬ';
+
+    let dots = '';
+    for (let i = 0; i < maxSlots; i++) {
+      const ok = pList[i] && pList[i].ready;
+      dots += `<div class="r-dot ${ok ? 'ok' : ''}">${ok ? '✓' : '👤'}</div>`;
+    }
+    document.getElementById('readyDots').innerHTML = dots;
+  }
+
+  // Map Ban state
+  if (activeLb.phase === 'ban') {
+    document.getElementById('phaseReady').style.display = 'none';
+    document.getElementById('phaseBan').style.display = 'block';
+    document.getElementById('phaseVote').style.display = 'none';
+    document.getElementById('phaseActive').style.display = 'none';
+
+    const isMyTurn = (activeLb.turnCap === MY_UID);
+    const turnTeam = (activeLb.turnCap === activeLb.capA) ? 'Команда А' : 'Команда Б';
+    document.getElementById('banTurnTitle').innerText = isMyTurn
+      ? '🔥 Ваш ход — забаньте карту!'
+      : `⏳ Банит капитан (${turnTeam})...`;
+
+    const mapsEl = document.getElementById('mapsList');
+    mapsEl.innerHTML = MAPS_POOL.map(m => {
+      const bannedBy = activeLb.bannedMaps[m.id];
+      return `
+        <div class="map-item ${bannedBy ? 'banned' : ''}">
+          <div class="map-info">
+            <div class="map-thumb" style="background:${m.color}">${m.id.slice(0,3).toUpperCase()}</div>
+            <div>
+              <div class="map-name">${m.id}</div>
+              <div class="map-sub">${bannedBy ? 'Забанено: ' + bannedBy : 'Доступна для пика'}</div>
+            </div>
+          </div>
+          ${bannedBy
+            ? `<span style="font-size:11px; color:#f87171; font-weight:800;">БАН</span>`
+            : `<button class="btn ${isMyTurn ? 'btn-pink' : 'btn-dark'}" ${isMyTurn ? '' : 'disabled'} onclick="banMap('${m.id}')">БАН</button>`
+          }
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Rounds Vote state
+  if (activeLb.phase === 'vote') {
+    document.getElementById('phaseReady').style.display = 'none';
+    document.getElementById('phaseBan').style.display = 'none';
+    document.getElementById('phaseVote').style.display = 'block';
+    document.getElementById('phaseActive').style.display = 'none';
+
+    document.getElementById('chosenMapName').innerText = activeLb.chosenMap || 'Sandstone';
+    const counts = { 10: 0, 13: 0, 16: 0 };
+    Object.values(activeLb.votes).forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+    [10, 13, 16].forEach(r => {
+      document.getElementById('vCount' + r).innerText = counts[r] + ' голосов';
+      document.getElementById('vCard' + r).classList.toggle('selected', activeLb.votes[MY_UID] === r);
+    });
+  }
+
+  // Active Match & Golden Host Frame
+  if (activeLb.phase === 'active') {
+    document.getElementById('phaseReady').style.display = 'none';
+    document.getElementById('phaseBan').style.display = 'none';
+    document.getElementById('phaseVote').style.display = 'none';
+    document.getElementById('phaseActive').style.display = 'block';
+
+    document.getElementById('finalMap').innerText = activeLb.chosenMap || 'Sandstone';
+    document.getElementById('finalRounds').innerText = activeLb.finalRounds || 13;
+
+    const hostPlayer = activeLb.players[activeLb.hostUid] || Object.values(activeLb.players)[0];
+    if (hostPlayer) {
+      document.getElementById('hostNick').innerText = hostPlayer.nick;
+      document.getElementById('hostGameId').innerText = hostPlayer.gameId;
+    }
+  }
+
+  // Render Teams A & B
+  const pArr = Object.values(activeLb.players);
+  const half = Math.ceil(pArr.length / 2);
+  const teamA = pArr.slice(0, half);
+  const teamB = pArr.slice(half);
+
+  const renderTeam = (arr, capUid) => arr.map(p => `
+    <div class="t-row">
+      <div class="t-nick">
+        <span>${p.nick} ${p.uid === capUid ? '👑' : ''}</span>
+      </div>
+      <div class="t-stats">ELO ${p.elo} • ${p.uid === MY_UID ? 'Вы' : 'В сети'}</div>
+    </div>
+  `).join('') || '<div class="t-stats">Пусто</div>';
+
+  document.getElementById('teamAList').innerHTML = renderTeam(teamA, activeLb.capA);
+  document.getElementById('teamBList').innerHTML = renderTeam(teamB, activeLb.capB);
+
+  // Render Chat
+  const chatBox = document.getElementById('chatMessages');
+  if (activeLb.chat.length === 0) {
+    chatBox.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:11px; margin-top:60px;">Пока тихо. Напишите сообщение в чат...</div>`;
+  } else {
+    const wasBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 40;
+    chatBox.innerHTML = activeLb.chat.map(m => `
+      <div class="msg ${m.uid === MY_UID ? 'mine' : ''}">
+        <div class="msg-author">${m.nick}</div>
+        <div>${m.text.replace(/</g, '&lt;')}</div>
+      </div>
+    `).join('');
+    if (wasBottom) chatBox.scrollTop = chatBox.scrollHeight;
+  }
+}
+
+updateAuthUI();
+renderAll();
+initNetwork();
+</script>
+</body>
+</html>
