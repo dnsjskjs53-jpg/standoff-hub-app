@@ -1,32 +1,32 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>CF STANDOFFKNIFE</title>
-<script src="https://telegram.org" defer></script>
-<script src="https://jsdelivr.net" defer></script>
+<script src="https://telegram.org"></script>
+<script src="https://jsdelivr.net"></script>
 <style>
 :root{--bg:#110c0e;--card:#191215;--slot:#24191d;--brd:#2f2025;--red:#e52538;--txt:#fff;--sub:#9b8c91;--gold:#f5b041;--grn:#2ecc71}
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--txt);padding-bottom:80px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);padding-bottom:75px}
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#160f12;position:sticky;top:0;z-index:40}
-.logo{width:32px;height:32px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.logo{width:32px;height:32px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
 .pill{background:var(--card);border:1px solid var(--brd);padding:6px 11px;border-radius:18px;font-size:11px;font-weight:700;cursor:pointer}
 .elo{background:#231814;border:1px solid #3c281e;padding:6px 10px;border-radius:18px;font-size:12px;font-weight:800;color:var(--gold)}
 .wrap{padding:0 14px;max-width:480px;margin:0 auto}
-.warn{background:rgba(245,176,65,.14);border:1px solid rgba(245,176,65,.35);color:var(--gold);padding:10px;border-radius:12px;font-size:11px;font-weight:800;text-align:center;margin:10px 0;cursor:pointer}
-.hero{background:radial-gradient(circle at 85% 20%,rgba(229,37,56,.25),#181114 70%);border:1px solid rgba(229,37,56,.3);border-radius:18px;padding:18px 14px;margin:10px 0}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.qbtn{padding:11px;border-radius:20px;border:1px solid var(--brd);background:var(--card);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer}
+.warn{background:rgba(245,176,65,.15);border:1px solid rgba(245,176,65,.4);color:var(--gold);padding:11px;border-radius:12px;font-size:11px;font-weight:800;text-align:center;margin:10px 0;cursor:pointer}
+.hero{background:radial-gradient(circle at 85% 20%,rgba(229,37,56,.25),#181114 70%);border:1px solid rgba(229,37,56,.3);border-radius:18px;padding:16px 14px;margin:10px 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.qbtn{padding:10px;border-radius:20px;border:1px solid var(--brd);background:var(--card);color:var(--sub);font-size:11px;font-weight:800;cursor:pointer}
 .qbtn.act{background:var(--red);border-color:var(--red);color:#fff}
-.bar{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:11px 13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.bar{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
 .abtn{background:var(--slot);border:1px solid var(--brd);color:#fff;padding:7px 13px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer}
 .lcard{background:var(--card);border:1px solid var(--brd);border-radius:15px;padding:13px;margin-bottom:10px}
 .lhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .jbtn{background:var(--red);color:#fff;border:none;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer}
 .jbtn.lv{background:#2d1f24;color:#ff8a96}
-.jbtn:disabled{opacity:.5}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
 .pslot{background:var(--slot);border:1px solid var(--brd);padding:7px 9px;border-radius:9px;font-size:12px;font-weight:600;display:flex;justify-content:space-between}
 .nav{position:fixed;bottom:0;left:0;right:0;background:#140e10;border-top:1px solid var(--brd);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 4px;z-index:50}
@@ -35,11 +35,11 @@ body{background:var(--bg);color:var(--txt);padding-bottom:80px}
 .scr{display:none}.scr.act{display:block}
 .ovl{position:fixed;inset:0;background:rgba(10,7,8,.95);display:none;align-items:center;justify-content:center;padding:16px;z-index:200;overflow-y:auto}
 .ovl.open{display:flex}
-.box{background:#1b1215;border:1.5px solid rgba(229,37,56,.4);border-radius:20px;padding:20px;width:100%;max-width:390px}
+.box{background:#1b1215;border:1.5px solid rgba(229,37,56,.4);border-radius:20px;padding:18px;width:100%;max-width:390px}
 .inp{width:100%;background:var(--slot);border:1px solid var(--brd);border-radius:11px;padding:11px;color:#fff;font-size:14px;margin-bottom:10px;outline:none}
 .err{color:#ff7b88;font-size:12px;margin-bottom:10px;display:none}
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.mcard{position:relative;height:92px;border-radius:12px;overflow:hidden;border:2px solid var(--brd);cursor:pointer;display:flex;align-items:flex-end;padding:8px}
+.mcard{position:relative;height:86px;border-radius:12px;overflow:hidden;border:2px solid var(--brd);cursor:pointer;display:flex;align-items:flex-end;padding:8px}
 .mcard.ban{opacity:.35;filter:grayscale(1);cursor:not-allowed}
 .mcard.pick{border-color:var(--grn);box-shadow:0 0 15px rgba(46,204,113,.3)}
 .mcard svg{position:absolute;inset:0;width:100%;height:100%}
@@ -54,77 +54,47 @@ body{background:var(--bg);color:var(--txt);padding-bottom:80px}
 </head>
 <body>
 
-<div class="ovl" id="auth-ovl">
-  <div class="box">
-    <div style="text-align:center;margin-bottom:14px">
-      <div class="logo" style="margin:0 auto 8px;width:44px;height:44px;font-size:18px">CF</div>
-      <h3>Вход в CF STANDOFFKNIFE</h3>
-      <p style="font-size:12px;color:var(--sub);margin-top:4px">1 аккаунт = 1 игровой ID (дубликаты запрещены)</p>
-    </div>
-    <input class="inp" id="in-id" inputmode="numeric" placeholder="Игровой ID (только цифры)">
-    <input class="inp" id="in-nick" placeholder="Никнейм в игре">
-    <div class="err" id="auth-err"></div>
-    <button class="jbtn" style="width:100%;padding:12px" onclick="regUser()">ВОЙТИ В ЛИГУ</button>
-  </div>
-</div>
+<div class="ovl" id="auth-ovl"><div class="box">
+  <h3 style="text-align:center;margin-bottom:4px">Вход в CF STANDOFFKNIFE</h3>
+  <p style="font-size:12px;color:var(--sub);text-align:center;margin-bottom:12px">1 аккаунт = 1 ID (дубликаты запрещены)</p>
+  <input class="inp" id="in-id" inputmode="numeric" placeholder="Игровой ID (цифры)">
+  <input class="inp" id="in-nick" placeholder="Никнейм в игре">
+  <div class="err" id="auth-err"></div>
+  <button class="jbtn" style="width:100%;padding:12px" onclick="regUser()">ВОЙТИ В ЛИГУ</button>
+  <button class="abtn" style="width:100%;margin-top:8px" onclick="document.getElementById('auth-ovl').classList.remove('open')">Закрыть</button>
+</div></div>
 
-<div class="ovl" id="match-ovl" style="align-items:flex-start">
-  <div class="box" style="max-width:440px;margin:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>МАТЧ НАЙДЕН</h3>
-      <span style="color:var(--grn);font-size:11px;font-weight:800">● VETO</span>
-    </div>
-    <div id="m-teams" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;font-size:12px"></div>
-    <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px">
-      <b>Бан лишних карт:</b>
-      <span id="veto-left" style="color:var(--gold)">Осталось забанить: 5</span>
-    </div>
-    <div class="mgrid" id="maps-box"></div>
-    <div id="rounds-box" style="display:none;border-top:1px solid var(--brd);padding-top:10px">
-      <div style="font-size:13px;font-weight:800">Карта: <span id="picked-map" style="color:var(--grn)"></span></div>
-      <div style="font-size:11px;color:var(--sub);margin-top:2px">Выберите количество раундов:</div>
-      <div class="rgrid">
-        <div class="rbtn act" onclick="setRounds(10,this)">10</div>
-        <div class="rbtn" onclick="setRounds(13,this)">13</div>
-        <div class="rbtn" onclick="setRounds(16,this)">16</div>
-      </div>
-      <button class="jbtn" style="width:100%;padding:11px" onclick="startMatch()">НАЧАТЬ МАТЧ (<span id="r-lbl">10</span> РАУНДОВ)</button>
-    </div>
-    <button class="abtn" style="width:100%;margin-top:8px" onclick="document.getElementById('match-ovl').classList.remove('open')">Закрыть</button>
+<div class="ovl" id="match-ovl" style="align-items:flex-start"><div class="box" style="max-width:440px;margin:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h3>МАТЧ НАЙДЕН</h3><span style="color:var(--grn);font-size:11px;font-weight:800">● VETO</span></div>
+  <div id="m-teams" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;font-size:12px"></div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px"><b>Бан карт:</b><span id="veto-left" style="color:var(--gold)">Осталось забанить: 5</span></div>
+  <div class="mgrid" id="maps-box"></div>
+  <div id="rounds-box" style="display:none;border-top:1px solid var(--brd);padding-top:10px">
+    <div style="font-size:13px;font-weight:800">Карта: <span id="picked-map" style="color:var(--grn)"></span></div>
+    <div class="rgrid"><div class="rbtn act" onclick="setRounds(10,this)">10</div><div class="rbtn" onclick="setRounds(13,this)">13</div><div class="rbtn" onclick="setRounds(16,this)">16</div></div>
+    <button class="jbtn" style="width:100%;padding:11px" onclick="startMatch()">НАЧАТЬ МАТЧ (<span id="r-lbl">10</span> РАУНДОВ)</button>
   </div>
-</div>
+  <button class="abtn" style="width:100%;margin-top:8px" onclick="document.getElementById('match-ovl').classList.remove('open')">Закрыть</button>
+</div></div>
 
-<div class="ovl" id="fr-ovl" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="box">
-    <h3 style="margin-bottom:8px">🤝 Друзья по ID</h3>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      <input class="inp" style="margin:0" id="fr-id" inputmode="numeric" placeholder="ID друга из игры">
-      <button class="jbtn" onclick="addFriend()">+</button>
-    </div>
-    <div class="err" id="fr-err"></div>
-    <div id="fr-list" style="max-height:180px;overflow-y:auto"></div>
-    <button class="abtn" style="width:100%;margin-top:8px" onclick="document.getElementById('fr-ovl').classList.remove('open')">Закрыть</button>
-  </div>
-</div>
+<div class="ovl" id="fr-ovl"><div class="box">
+  <h3 style="margin-bottom:8px">🤝 Друзья по ID</h3>
+  <div style="display:flex;gap:6px;margin-bottom:8px"><input class="inp" style="margin:0" id="fr-id" inputmode="numeric" placeholder="ID друга"><button class="jbtn" onclick="addFriend()">+</button></div>
+  <div class="err" id="fr-err"></div>
+  <div id="fr-list" style="max-height:170px;overflow-y:auto"></div>
+  <button class="abtn" style="width:100%;margin-top:8px" onclick="document.getElementById('fr-ovl').classList.remove('open')">Закрыть</button>
+</div></div>
 
-<div class="ovl" id="pt-ovl" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="box">
-    <h3 style="margin-bottom:6px">👥 Пати (до 5 человек)</h3>
-    <p style="font-size:12px;color:var(--sub);margin-bottom:8px">Код вашего пати: <b style="color:var(--gold)" id="pt-code"></b></p>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      <input class="inp" style="margin:0" id="pt-in" placeholder="Код пати друга (CF-...)">
-      <button class="jbtn" onclick="joinParty()">Вступить</button>
-    </div>
-    <div id="pt-list" style="font-size:12px;margin-bottom:8px"></div>
-    <button class="abtn" style="width:100%" onclick="document.getElementById('pt-ovl').classList.remove('open')">Закрыть</button>
-  </div>
-</div>
+<div class="ovl" id="pt-ovl"><div class="box">
+  <h3 style="margin-bottom:6px">👥 Пати (до 5 человек)</h3>
+  <p style="font-size:12px;color:var(--sub);margin-bottom:8px">Код вашего пати: <b style="color:var(--gold)" id="pt-code"></b></p>
+  <div style="display:flex;gap:6px;margin-bottom:8px"><input class="inp" style="margin:0" id="pt-in" placeholder="Код друга (CF-...)"><button class="jbtn" onclick="joinParty()">Вступить</button></div>
+  <div id="pt-list" style="font-size:12px;margin-bottom:8px"></div>
+  <button class="abtn" style="width:100%" onclick="document.getElementById('pt-ovl').classList.remove('open')">Закрыть</button>
+</div></div>
 
 <header class="hdr">
-  <div style="display:flex;align-items:center;gap:8px">
-    <div class="logo">CF</div>
-    <div><div style="font-size:13px;font-weight:800">CF STANDOFFKNIFE</div><div style="font-size:10px;color:var(--sub)">FACEIT</div></div>
-  </div>
+  <div style="display:flex;align-items:center;gap:8px"><div class="logo">CF</div><div><div style="font-size:13px;font-weight:800">CF STANDOFFKNIFE</div><div style="font-size:10px;color:var(--sub)">FACEIT</div></div></div>
   <div class="pill" onclick="toggleFmt()" id="fmt-pill">⚡ 1x1 ТЕСТ</div>
   <div class="elo">⚡ <span id="u-elo">1000</span></div>
 </header>
@@ -133,15 +103,12 @@ body{background:var(--bg);color:var(--txt);padding-bottom:80px}
   <div id="scr-play" class="scr act">
     <div class="warn" id="w-ban" onclick="openAuth()">⚠️ НАЖМИТЕ ДЛЯ ВХОДА ПО ID И НИКУ</div>
     <div class="hero">
-      <div style="font-size:24px;font-weight:900">ИГРАТЬ</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:3px">В очередях сейчас: <b style="color:#fff" id="q-cnt">0</b></div>
-      <div class="tabs">
-        <button class="qbtn act" id="b-1x1" onclick="setFmt('1x1')">⚡ 1x1 ТЕСТ</button>
-        <button class="qbtn" id="b-5x5" onclick="setFmt('5x5')">DEFAULT • 5x5</button>
-      </div>
+      <div style="font-size:22px;font-weight:900">ИГРАТЬ</div>
+      <div style="font-size:12px;color:var(--sub);margin-top:3px">В очередях: <b style="color:#fff" id="q-cnt">0</b></div>
+      <div class="tabs"><button class="qbtn act" id="b-1x1" onclick="setFmt('1x1')">⚡ 1x1 ТЕСТ</button><button class="qbtn" id="b-5x5" onclick="setFmt('5x5')">DEFAULT • 5x5</button></div>
     </div>
-    <div class="bar">
-      <div><div style="font-size:13px;font-weight:700">👥 Пати (<span id="pt-cnt">1</span>/5)</div><div style="font-size:11px;color:var(--sub)">Вход в лобби всей командой</div></div>
-      <button class="abtn" onclick="openParty()">Пати</button>
-    </div>
-    <div class="bar">
+    <div class="bar"><div><div style="font-size:13px;font-weight:700">👥 Пати (<span id="pt-cnt">1</span>/5)</div><div style="font-size:11px;color:var(--sub)">Общий вход в лобби</div></div><button class="abtn" onclick="openParty()">Пати</button></div>
+    <div class="bar"><div><div style="font-size:13px;font-weight:700">🤝 Друзья (<span id="fr-cnt">0</span>)</div><div style="font-size:11px;color:var(--sub)">Добавить по ID</div></div><button class="abtn" onclick="openFriends()">Друзья</button></div>
+    <div id="lobbies"></div>
+  </div>
+  <div id="scr-prof" class="scr"><div class="lcard" style="margin-top:12px"><h3 id="p-nick">Гость</h3><p style="font-size:12px;color:var(--sub);margin-top:4px" id="p-id">ID: не привязан</p><button class="jbtn" style="margin-top:10px" id="p-btn" onclick="openAuth()">Войти</button></div></div>
