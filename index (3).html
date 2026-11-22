@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CF STANDOFFKNIFE — FACEIT LEAGUE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg-main: #110c0e;
+    --bg-card: #191215;
+    --bg-card-inner: #22171b;
+    --bg-slot: #24191d;
+    --border-color: #2f2025;
+    --accent-red: #e52538;
+    --accent-red-dark: #9c1724;
+    --accent-red-bg: rgba(229, 37, 56, 0.14);
+    --text-primary: #ffffff;
+    --text-secondary: #9b8c91;
+    --text-muted: #68595e;
+    --gold: #f5b041;
+    --orange: #e67e22;
+    --green: #2ecc71;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding-bottom: 84px;
+    overflow-x: hidden;
+  }
+
+  /* Top Header */
+  .top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #1b1114 0%, #110c0e 100%);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, #f02d40 0%, #b81424 100%);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: -0.5px;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(229, 37, 56, 0.35);
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .brand-sub {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pill {
+    background: #1d1418;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 6px 11px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .dot-live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    box-shadow: 0 0 6px var(--accent-red);
+  }
+
+  .elo-badge {
+    color: var(--gold);
+    background: #241916;
+    border-color: #3d2820;
+  }
+
+  .container {
+    padding: 0 14px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Verify Hours Banner */
+  .verify-banner {
+    background: linear-gradient(90deg, #2d1d12 0%, #241712 100%);
+    border: 1px solid #4a2e18;
+    color: #f39c12;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .verify-banner.verified {
+    background: linear-gradient(90deg, #132a1c 0%, #112218 100%);
+    border-color: #1f4d32;
+    color: var(--green);
+  }
+
+  /* Play Hero Card */
+  .hero-card {
+    position: relative;
+    background: radial-gradient(circle at 85% 20%, rgba(229, 37, 56, 0.25) 0%, rgba(35, 18, 23, 0.95) 55%, #181114 100%);
+    border: 1px solid #351d24;
+    border-radius: 18px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .hero-watermark {
+    position: absolute;
+    right: -12px;
+    top: 10px;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 0.92;
+    color: rgba(255, 255, 255, 0.045);
+    text-transform: uppercase;
+    pointer-events: none;
+    transform: rotate(-10deg);
+    user-select: none;
+    text-align: right;
+  }
+
+  .hero-title {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-sub span {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .mode-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .mode-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active {
+    background: linear-gradient(180deg, #ef2b3e 0%, #c8192b 100%);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(229, 37, 56, 0.35);
+  }
+
+  .mode-btn.locked {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+  }
+
+  /* Party Card */
+  .party-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .party-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .party-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #172334;
+    border: 1px solid #243854;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .party-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .party-info p {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .btn-dark {
+    background: #261b1f;
+    border: 1px solid #38272d;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Lobby Cards */
+  .lobby-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .lobby-bg-num {
+    position: absolute;
+    right: 12px;
+    bottom: -14px;
+    font-size: 76px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.025);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+
+  .lobby-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .lobby-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+  }
+
+  .lobby-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .lobby-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .btn-join {
+    background: linear-gradient(180deg, #ef2b3e 0%, #c8192b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(229, 37, 56, 0.3);
+  }
+
+  .btn-join.leave {
+    background: #2c1e23;
+    border: 1px solid #4a313a;
+    box-shadow: none;
+    color: #ff6b7a;
+  }
+
+  .btn-join:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .lobby-empty {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 4px 0 2px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .players-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .player-slot {
+    background: var(--bg-slot);
+    border: 1px solid #302127;
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .player-slot.me {
+    border-color: var(--accent-red);
+    background: rgba(229, 37, 56, 0.08);
+  }
+
+  .player-name {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lvl-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .lvl-low {
+    border: 1.5px solid #9b8c91;
+    color: #d0c5c9;
+  }
+
+  .lvl-mid {
+    border: 1.5px solid #f39c12;
+    color: #f39c12;
+  }
+
+  .lvl-high {
+    border: 1.5px solid #e52538;
+    color: #ff4d5e;
+    background: rgba(229, 37, 56, 0.12);
+  }
+
+  .lobby-footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 2;
+  }
+
+  .lobby-footer strong {
+    color: #fff;
+  }
+
+  /* Screens */
+  .screen {
+    display: none;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  /* Profile, Top, Inventory, More Styles */
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .profile-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .avatar-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #e52538, #8e1320);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-box {
+    background: var(--bg-slot);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .list-row:last-child {
+    border-bottom: none;
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #140e10;
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 8px 10px;
+    z-index: 60;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .nav-item.active {
+    background: #2b151a;
+    color: #ff4757;
+  }
+
+  .nav-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+
+  .modal-backdrop.open {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #1b1316;
+    border: 1px solid #3a262d;
+    border-radius: 18px;
+    padding: 18px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .modal-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+
+  .modal-input {
+    width: 100%;
+    background: #120c0e;
+    border: 1px solid #38262c;
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  .modal-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .toast {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #26181d;
+    border: 1px solid var(--accent-red);
+    color: #fff;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 120;
+    display: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<header class="top-header">
+  <div class="brand">
+    <div class="brand-logo">CF</div>
+    <div class="brand-text">
+      <div class="brand-title">CF STANDOFFKNIFE</div>
+      <div class="brand-sub">FACEIT LEAGUE</div>
+    </div>
+  </div>
+  <div class="header-pills">
+    <div class="pill" id="queueTypePill" onclick="toggleQueueType()">
+      <span class="dot-live"></span>
+      <span id="queueTypeText">КЛАССИКА</span>
+    </div>
+    <div class="pill elo-badge">
+      <span>⚡</span>
+      <span id="userEloHeader">1000</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- SCREEN: PLAY -->
+  <section class="screen active" id="screen-play">
+    <div class="verify-banner" id="verifyBanner" onclick="openVerifyModal()">
+      <span>⚠️ ПОДТВЕРДИ ЧАСЫ В ИГРЕ &gt;</span>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-watermark">PLAY TO<br>CF STANDOFF<br>KNIFE</div>
+      <div class="hero-title">ИГРАТЬ</div>
+      <div class="hero-sub">В очередях сейчас: <span id="totalInQueue">0</span></div>
+      <div class="mode-switch">
+        <button class="mode-btn active" id="btnDefaultMode" onclick="selectMode('default')">DEFAULT • MOBILE</button>
+        <button class="mode-btn locked" id="btnQualMode" onclick="selectMode('qual')">🔒 QUALIFICATION</button>
+      </div>
+    </div>
+
+    <div class="party-card">
+      <div class="party-left">
+        <div class="party-icon">👥</div>
+        <div class="party-info">
+          <h4>Собери пати</h4>
+          <p id="partySubText">До 2 игроков в одной команде · 3 с Premium</p>
+        </div>
+      </div>
+      <button class="btn-dark" onclick="openPartyModal()">Пати</button>
+    </div>
+
+    <div id="lobbiesContainer"></div>
+  </section>
+
+  <!-- SCREEN: PROFILE -->
+  <section class="screen" id="screen-profile">
+    <div class="section-card">
+      <div class="profile-top">
+        <div class="avatar-circle" id="profileAvatar">CF</div>
+        <div>
+          <h3 id="profileName" style="font-size:17px;font-weight:800;">Игрок</h3>
+          <p id="profileSo2Id" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Standoff 2 ID: не привязан</p>
+          <span style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--gold);background:#261a14;padding:3px 8px;border-radius:6px;">Уровень 3 · 1000 ELO</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val">0</div>
+          <div class="stat-lbl">Матчей</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">0%</div>
+          <div class="stat-lbl">Винрейт</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">1.00</div>
+          <div class="stat-lbl">K/D</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <h4 style="font-size:14px;font-weight:800;margin-bottom:8px;">История матчей</h4>
+      <p style="font-size:12px;color:var(--text-secondary);">У вас пока нет сыгранных матчей в лиге CF STANDOFFKNIFE.</p>
+    </div>
+  </section>
+
+  <!-- SCREEN: TOP -->
+  <section class="screen" id="screen-top">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:4px;">Таблица лидеров</h3>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">Сезон 1 · CF STANDOFFKNIFE</p>
+      <div id="leaderboardList">
+        <p style="font-size:12px;color:var(--text-muted);padding:8px 0;">Рейтинг обновится после первых завершённых матчей.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: INVENTORY -->
+  <section class="screen" id="screen-inventory">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:6px;">Инвентарь и награды</h3>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Здесь отображаются выигранные скины, промокоды и статус Premium.</p>
+      <div class="stat-box" style="padding:18px;">
+        <div style="font-size:24px;margin-bottom:6px;">📦</div>
+        <div style="font-size:13px;font-weight:700;">Инвентарь пуст</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Играйте матчи в лобби, чтобы зарабатывать очки лиги и призы.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN: MORE -->
+  <section class="screen" id="screen-more">
+    <div class="section-card">
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px;">CF STANDOFFKNIFE</h3>
+      <div class="list-row" onclick="showToast('Правила лиги: честная игра, без читов и багов')">
+        <span style="font-size:13px;font-weight:600;">📜 Правила лиги</span>
+        <span style="color:var(--text-secondary);">›</span>
+      </div>
+      <div class="list-row" onclick="showToast('Официальный канал @cfstandoffkknife')">
+        <span style="font-size:13px;font-weight:600;">📢 Telegram-канал</span>
+        <span style="color:var(--text-secondary);">›</span>
+      </div>
+      <div class="list-row" onclick="showToast('Запрос отправлен модераторам лиги')">
+        <span style="font-size:13px;font-weight:600;">🛡 Вызвать модератора</span>
+        <span style="color:var(--text-secondary);">›</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <div class="nav-item" data-tab="profile" onclick="switchTab('profile')">
+    <span class="nav-icon">👤</span>
+    <span>ПРОФИЛЬ</span>
+  </div>
+  <div class="nav-item active" data-tab="play" onclick="switchTab('play')">
+    <span class="nav-icon">▶️</span>
+    <span>ИГРАТЬ</span>
+  </div>
+  <div class="nav-item" data-tab="top" onclick="switchTab('top')">
+    <span class="nav-icon">🏆</span>
+    <span>ТОП</span>
+  </div>
+  <div class="nav-item" data-tab="inventory" onclick="switchTab('inventory')">
+    <span class="nav-icon">📦</span>
+    <span>ИНВЕНТАРЬ</span>
+  </div>
+  <div class="nav-item" data-tab="more" onclick="switchTab('more')">
+    <span class="nav-icon">⊞</span>
+    <span>ЕЩЁ</span>
+  </div>
+</nav>
+
+<!-- Verify ID Modal -->
+<div class="modal-backdrop" id="verifyModal">
+  <div class="modal-box">
+    <div class="modal-title">Подтверждение аккаунта</div>
+    <div class="modal-text">Введите ваш игровой ID из Standoff 2, чтобы получить доступ к рейтинговым лобби.</div>
+    <input type="text" class="modal-input" id="so2IdInput" placeholder="Например: 148920451" maxlength="15">
+    <div class="modal-btns">
+      <button class="btn-dark" onclick="closeModal('verifyModal')">Отмена</button>
+      <button class="btn-join" onclick="saveSo2Id()">Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Party Modal -->
+<div class="modal-backdrop" id="partyModal">
+  <div class="modal-box">
+    <div class="modal-title">Пати лобби</div>
+    <div class="modal-text">Поделитесь кодом пати с другом, чтобы заходить в лобби вместе.</div>
+    <div class="stat-box" style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text-secondary);">ВАШ КОД ПАТИ</div>
+      <div id="partyCodeDisplay" style="font-size:18px;font-weight:900;letter-spacing:2px;margin-top:4px;color:var(--gold);">CF-7492</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-dark" onclick="closeModal('partyModal')">Закрыть</button>
+      <button class="btn-join" onclick="copyPartyCode()">Скопировать код</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === SUPABASE CONFIG ===
+  const SUPABASE_URL = 'https://ryfbonpfmohmmgdyllok.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_kElqIYFA9DBYN703YlhHTw_JMgOsXqi';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // === TELEGRAM USER INIT ===
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  function getOrCreateLocalId() {
+    let saved = localStorage.getItem('cf_guest_id');
+    if (!saved) {
+      saved = 'guest_' + Math.floor(100000 + Math.random() * 900000);
+      localStorage.setItem('cf_guest_id', saved);
+    }
+    return saved;
+  }
+
+  const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+  const currentUser = {
+    tg_id: tgUser ? String(tgUser.id) : getOrCreateLocalId(),
+    nickname: tgUser ? (tgUser.username || tgUser.first_name || 'Player') : ('Player_' + getOrCreateLocalId().slice(-4)),
+    elo: Number(localStorage.getItem('cf_user_elo')) || 1000,
+    level: Number(localStorage.getItem('cf_user_lvl')) || 3
+  };
+
+  document.getElementById('profileName').textContent = currentUser.nickname;
+  document.getElementById('profileAvatar').textContent = currentUser.nickname.slice(0, 2).toUpperCase();
+  document.getElementById('userEloHeader').textContent = currentUser.elo;
+
+  const savedSo2 = localStorage.getItem('cf_so2_id');
+  if (savedSo2) {
+    applyVerifiedUI(savedSo2);
+  }
+
+  // === LOBBY STATE ===
+  const LOBBY_IDS = [1, 2, 3, 4];
+  let allPlayers = [];
+  let isBusy = false;
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2600);
+  }
+
+  function getLevelBadgeClass(lvl) {
+    if (lvl >= 8) return 'lvl-high';
+    if (lvl >= 4) return 'lvl-mid';
+    return 'lvl-low';
+  }
+
+  function renderLobbies() {
+    const container = document.getElementById('lobbiesContainer');
+    document.getElementById('totalInQueue').textContent = allPlayers.length;
+    container.innerHTML = '';
+
+    LOBBY_IDS.forEach(lobbyNum => {
+      const players = allPlayers.filter(p => Number(p.lobby_id) === lobbyNum);
+      const isMeHere = players.some(p => p.tg_id === currentUser.tg_id);
+      const count = players.length;
+
+      let avgElo = 0;
+      if (count > 0) {
+        const sum = players.reduce((acc, p) => acc + (Number(p.elo) || 1000), 0);
+        avgElo = Math.round(sum / count);
+      }
+
+      const card = document.createElement('div');
+      card.className = 'lobby-card';
+
+      let bodyHtml = '';
+      if (count === 0) {
+        bodyHtml = `<div class="lobby-empty">Пока никого — будь первым</div>`;
+      } else {
+        const slotsHtml = players.map(p => {
+          const isMe = p.tg_id === currentUser.tg_id;
+          const lvl = p.level || 3;
+          return `
+            <div class="player-slot ${isMe ? 'me' : ''}">
+              <span class="player-name">${escapeHtml(p.nickname)}</span>
+              <span class="lvl-badge ${getLevelBadgeClass(lvl)}">${lvl}</span>
+            </div>
+          `;
+        }).join('');
+
+        bodyHtml = `
+          <div class="players-grid">${slotsHtml}</div>
+          <div class="lobby-footer">
+            <span>Средний ELO: <strong>${avgElo}</strong></span>
+          </div>
+        `;
+      }
+
+      const btnClass = isMeHere ? 'btn-join leave' : 'btn-join';
+      const btnText = isMeHere ? 'Выйти' : 'Войти';
+      const disabledAttr = (!isMeHere && count >= 10) ? 'disabled' : '';
+
+      card.innerHTML = `
+        <div class="lobby-bg-num">0${lobbyNum}</div>
+        <div class="lobby-header">
+          <div class="lobby-title">ЛОББИ #${lobbyNum}</div>
+          <div class="lobby-actions">
+            <span class="lobby-count">${count}/10</span>
+            <button class="${btnClass}" ${disabledAttr} onclick="toggleLobby(${lobbyNum})">${btnText}</button>
+          </div>
+        </div>
+        ${bodyHtml}
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[s]));
+  }
+
+  async function loadPlayers() {
+    const { data, error } = await db
+      .from('lobby_players')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.error('Supabase load error:', error);
+      renderLobbies();
+      return;
+    }
+    allPlayers = data || [];
+    renderLobbies();
+  }
+
+  async function toggleLobby(lobbyNum) {
+    if (isBusy) return;
+    isBusy = true;
+
+    try {
+      const existing = allPlayers.find(p => p.tg_id === currentUser.tg_id);
+
+      if (existing && Number(existing.lobby_id) === lobbyNum) {
+        // Leave current lobby
+        const { error } = await db
+          .from('lobby_players')
+          .delete()
+          .eq('tg_id', currentUser.tg_id);
+
+        if (error) throw error;
+        showToast('Вы вышли из ЛОББИ #' + lobbyNum);
+      } else {
+        // Check capacity
+        const targetCount = allPlayers.filter(p => Number(p.lobby_id) === lobbyNum).length;
+        if (targetCount >= 10) {
+          showToast('Лобби заполнено (10/10)');
+          return;
+        }
+
+        // Upsert user into new lobby (automatically moves from another lobby if needed)
+        const { error } = await db
+          .from('lobby_players')
+          .upsert({
+            lobby_id: lobbyNum,
+            tg_id: currentUser.tg_id,
+            nickname: currentUser.nickname,
+            elo: currentUser.elo,
+            level: currentUser.level
+          }, { onConflict: 'tg_id' });
+
+        if (error) throw error;
+        showToast('Вы вошли в ЛОББИ #' + lobbyNum);
+      }
+
+      await loadPlayers();
+    } catch (err) {
+      console.error(err);
+      showToast('Ошибка базы данных. Проверьте таблицу lobby_players.');
+    } finally {
+      isBusy = false;
+    }
+  }
+
+  // Realtime subscription
+  db.channel('lobby-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'lobby_players' }, () => {
+      loadPlayers();
+    })
+    .subscribe();
+
+  // === UI INTERACTIONS ===
+  function switchTab(tabName) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('screen-' + tabName).classList.add('active');
+    document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+  }
+
+  let isClassic = true;
+  function toggleQueueType() {
+    isClassic = !isClassic;
+    document.getElementById('queueTypeText').textContent = isClassic ? 'КЛАССИКА' : 'СОРЕВНОВАТЕЛЬНЫЙ';
+    showToast('Режим: ' + (isClassic ? 'КЛАССИКА' : 'СОРЕВНОВАТЕЛЬНЫЙ'));
+  }
+
+  function selectMode(mode) {
+    if (mode === 'qual') {
+      showToast('Режим QUALIFICATION доступен с 5 уровня');
+      return;
+    }
+    showToast('Выбран режим DEFAULT • MOBILE');
+  }
+
+  function openVerifyModal() {
+    document.getElementById('verifyModal').classList.add('open');
+  }
+
+  function openPartyModal() {
+    const code = 'CF-' + (currentUser.tg_id.slice(-4) || '7492');
+    document.getElementById('partyCodeDisplay').textContent = code;
+    document.getElementById('partyModal').classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function applyVerifiedUI(idVal) {
+    const banner = document.getElementById('verifyBanner');
+    banner.classList.add('verified');
+    banner.innerHTML = `<span>✅ АККАУНТ ПОДТВЕРЖДЁН (ID: ${escapeHtml(idVal)})</span>`;
+    document.getElementById('profileSo2Id').textContent = 'Standoff 2 ID: ' + idVal;
+  }
+
+  function saveSo2Id() {
+    const val = document.getElementById('so2IdInput').value.trim();
+    if (!val || val.length < 5) {
+      showToast('Введите корректный ID Standoff 2');
+      return;
+    }
+    localStorage.setItem('cf_so2_id', val);
+    applyVerifiedUI(val);
+    closeModal('verifyModal');
+    showToast('ID успешно привязан!');
+  }
+
+  function copyPartyCode() {
+    const code = document.getElementById('partyCodeDisplay').textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+    }
+    closeModal('partyModal');
+    showToast('Код пати скопирован: ' + code);
+  }
+
+  // Initial load
+  loadPlayers();
+</script>
+</body>
+</html>
