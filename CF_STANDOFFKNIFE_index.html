@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0b0f">
+<title>CF STANDOFFKNIFE — FACEIT LEAGUE</title>
+<style>
+:root{--bg:#0b0b0f;--panel:#14141b;--panel2:#1b1b25;--line:#292936;--text:#f4f4f7;--muted:#9696a5;--red:#f43f5e;--red2:#be123c;--green:#22c55e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#241019 0,#0b0b0f 45%);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1100px;margin:auto;padding:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0 22px;border-bottom:1px solid var(--line)}
+.brand{font-weight:900;letter-spacing:1px;font-size:19px}.brand span{color:var(--red)}
+.status{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:7px 10px;border-radius:20px}
+nav{display:flex;gap:8px;overflow:auto;padding:15px 0;scrollbar-width:none}nav button{white-space:nowrap;border:1px solid var(--line);background:#111118;color:#c9c9d2;border-radius:10px;padding:10px 13px}nav button.active,nav button:hover{background:var(--red);border-color:var(--red);color:white}
+main{padding:8px 0 50px}.hero{padding:30px 24px;border:1px solid #49202c;border-radius:18px;background:linear-gradient(120deg,#241018,#15121a 65%);margin-bottom:18px}.eyebrow{color:#fb7185;font-size:11px;letter-spacing:2px;font-weight:bold}.hero h1{font-size:clamp(27px,6vw,44px);margin:10px 0}.hero p{color:#b6b2bd;line-height:1.6;max-width:650px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;background:var(--red);color:white}.btn:hover{background:#e11d48}.btn.secondary{background:#252530;border:1px solid var(--line)}.btn.small{padding:8px 11px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}.card{background:linear-gradient(145deg,var(--panel),#111117);border:1px solid var(--line);border-radius:15px;padding:18px}.card h3{margin:0 0 8px}.muted{color:var(--muted)}.stat{font-size:29px;font-weight:900;margin:10px 0 2px}.section-title{font-size:22px;margin:12px 0 16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:7px;margin:12px 0}.field label{font-size:13px;color:#c7c7d1}.field input{width:100%;background:#0d0d13;border:1px solid #343441;color:white;border-radius:9px;padding:12px;outline:none}.field input:focus{border-color:var(--red)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}.hidden{display:none!important}.notice{font-size:12px;color:var(--muted);line-height:1.5}.player{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.player:last-child{border:0}.tag{font-size:11px;color:#fda4af;background:#3a1722;padding:5px 8px;border-radius:20px}
+footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:560px){.wrap{padding:13px}.hero{padding:23px 17px}.brand{font-size:16px}.status{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="brand">CF <span>STANDOFFKNIFE</span></div><div class="status">STANDOFF 2 • COMMUNITY LEAGUE</div></header>
+<nav id="nav">
+<button class="active" data-page="home">Главная</button>
+<button data-page="profile">Мой профиль</button>
+<button data-page="search">Поиск игрока</button>
+<button data-page="teams">Команды</button>
+<button data-page="maps">Карты и баны</button>
+</nav>
+<main>
+<section id="home" class="page">
+<div class="hero"><div class="eyebrow">COMPETITIVE COMMUNITY</div><h1>ТВОЯ ИГРА. ТВОЯ ЛИГА.</h1><p>CF STANDOFFKNIFE — площадка игроков Standoff 2. Создай профиль по игровому ID и нику, найди игроков и следи за своей статистикой.</p><div class="actions"><button class="btn" onclick="showPage('profile')">Открыть профиль</button><button class="btn secondary" onclick="showPage('search')">Найти игрока</button></div></div>
+<div class="grid">
+<div class="card"><div class="muted">Игроки в этом браузере</div><div class="stat" id="statPlayers">0</div><div class="muted">Локальная демо-версия</div></div>
+<div class="card"><div class="muted">Разделы лиги</div><div class="stat">5</div><div class="muted">Профили, поиск, команды, карты</div></div>
+<div class="card"><div class="muted">Регистрация</div><div class="stat">ID + ник</div><div class="muted">Один ID и ник на профиль</div></div>
+</div>
+<div class="panel" style="margin-top:14px"><h3>Добро пожаловать</h3><p class="muted">Это стартовая сборка сайта. Сейчас данные сохраняются только в этом браузере на этом устройстве. Для общей базы игроков и настоящего входа потребуется подключить Supabase.</p></div>
+</section>
+
+<section id="profile" class="page hidden">
+<h2 class="section-title">Мой профиль</h2>
+<div class="panel" id="profileView">
+<div id="noProfile"><h3>Создать профиль игрока</h3><p class="muted">Укажи игровой ID и точный ник Standoff 2.</p>
+<form id="registerForm">
+<div class="field"><label for="gameId">Игровой ID</label><input id="gameId" inputmode="numeric" placeholder="Например, 12345678" required></div>
+<div class="field"><label for="nickname">Игровой ник</label><input id="nickname" maxlength="24" placeholder="Твой ник в игре" required></div>
+<button class="btn" type="submit">Зарегистрироваться</button>
+</form><p class="notice">Демо-регистрация: проверка уникальности работает среди профилей, сохранённых в этом браузере.</p></div>
+<div id="hasProfile" class="hidden"><div class="row"><div><div class="muted">Игровой ник</div><h2 id="pNick"></h2><div class="muted">ID: <span id="pId"></span></div></div><div style="text-align:right"><span class="tag">PLAYER</span></div></div>
+<div class="grid" style="margin-top:16px"><div class="card"><div class="muted">Убийства</div><div class="stat" id="kills">0</div></div><div class="card"><div class="muted">Помощи</div><div class="stat" id="assists">0</div></div><div class="card"><div class="muted">Смерти</div><div class="stat" id="deaths">0</div></div></div>
+<div class="panel" style="margin-top:14px"><h3>Калибровка</h3><p class="muted">Раздел калибровки находится внутри профиля игрока.</p><button class="btn secondary" onclick="alert('Калибровка будет подключена в следующей версии.')">Открыть калибровку</button></div>
+<button class="btn secondary" onclick="logout()">Выйти из профиля</button></div>
+</div>
+</section>
+
+<section id="search" class="page hidden">
+<h2 class="section-title">Поиск игрока</h2><div class="panel"><div class="field"><label for="searchInput">Игровой ник или ID</label><input id="searchInput" placeholder="Начни вводить ник или ID..."></div><div id="searchResults" class="muted">Пока нет зарегистрированных игроков в локальном списке.</div></div>
+</section>
+
+<section id="teams" class="page hidden">
+<h2 class="section-title">Команды</h2><div class="panel"><h3>Командный раздел</h3><p class="muted">Здесь будут отображаться команды, составы и капитаны. Раздел подготовлен; подключение общей базы команд ещё не выполнено.</p><span class="tag">COMING SOON</span></div>
+</section>
+
+<section id="maps" class="page hidden">
+<h2 class="section-title">Карты и баны</h2><div class="grid">
+<div class="card"><h3>Выбор карт</h3><p class="muted">Инструмент для выбора карт перед матчем.</p><button class="btn secondary small" onclick="alert('Выбор карт будет подключён позже.')">Открыть</button></div>
+<div class="card"><h3>Баны карт</h3><p class="muted">Порядок банов и пиков команд.</p><button class="btn secondary small" onclick="alert('Система банов будет подключена позже.')">Открыть</button></div>
+</div></section>
+</main>
+<footer>CF STANDOFFKNIFE • Независимое сообщество игроков Standoff 2</footer>
+</div>
+<script>
+const KEY='cf_standoffknife_players_v1';
+const PROFILE='cf_standoffknife_current_v1';
+const getPlayers=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}};
+const getCurrent=()=>localStorage.getItem(PROFILE);
+function showPage(name){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(name).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(name==='profile')renderProfile();if(name==='search')renderSearch()}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function renderProfile(){const p=getPlayers().find(x=>x.id===getCurrent());document.getElementById('noProfile').classList.toggle('hidden',!!p);document.getElementById('hasProfile').classList.toggle('hidden',!p);if(p){document.getElementById('pNick').textContent=p.nick;document.getElementById('pId').textContent=p.id;}}
+function updateStats(){document.getElementById('statPlayers').textContent=getPlayers().length}
+document.getElementById('registerForm').addEventListener('submit',e=>{e.preventDefault();const id=document.getElementById('gameId').value.trim();const nick=document.getElementById('nickname').value.trim();if(!/^\d{4,20}$/.test(id)){alert('Проверь игровой ID: введи от 4 до 20 цифр.');return}if(nick.length<2){alert('Ник должен содержать минимум 2 символа.');return}const players=getPlayers();if(players.some(p=>p.id===id)){alert('Этот игровой ID уже зарегистрирован.');return}if(players.some(p=>p.nick.toLowerCase()===nick.toLowerCase())){alert('Этот ник уже занят.');return}players.push({id,nick,kills:0,assists:0,deaths:0});localStorage.setItem(KEY,JSON.stringify(players));localStorage.setItem(PROFILE,id);e.target.reset();updateStats();renderProfile();alert('Профиль создан!')});
+function logout(){localStorage.removeItem(PROFILE);renderProfile()}
+function renderSearch(){const q=document.getElementById('searchInput').value.trim().toLowerCase();const matches=getPlayers().filter(p=>p.nick.toLowerCase().includes(q)||p.id.includes(q));const box=document.getElementById('searchResults');if(!matches.length){box.textContent='Игроки не найдены.';return}box.innerHTML=matches.map(p=>`<div class="player"><div><b>${escapeHtml(p.nick)}</b><div class="muted">ID: ${escapeHtml(p.id)}</div></div><span class="tag">PLAYER</span></div>`).join('')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById('searchInput').addEventListener('input',renderSearch);
+updateStats();renderProfile();
+</script>
+</body>
+</html>
